@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SFC storefront test fixture</title>
+  </head>
+  <body>
+    <main data-sfc-tools-root data-api-base="/apps/sfc-tools" data-customer-logged-in="false">
+      <form data-rate-form novalidate>
+        <label><input type="radio" name="firstMileMode" value="dropoff" checked data-first-mile-mode>Drop-off</label>
+        <input name="country" value="US">
+        <input name="state" value="CA">
+        <input name="city" value="Los Angeles">
+        <input name="zipCode" value="90001">
+        <input name="weight" type="number" value="1">
+        <input name="length" type="number" value="20">
+        <input name="width" type="number" value="15">
+        <input name="height" type="number" value="10">
+        <button id="quote" type="submit">Check rates</button>
+      </form>
+      <section data-rate-results aria-live="polite"></section>
+
+      <section data-order-panel hidden>
+        <form data-order-form novalidate></form>
+      </section>
+
+      <form data-tracking-form novalidate>
+        <input data-tracking-number>
+        <button id="track" type="submit">Track</button>
+      </form>
+      <strong data-tracking-provider>SFC</strong>
+      <section data-tracking-widget aria-live="polite"></section>
+
+      <dialog data-compliance-dialog>
+        <div data-compliance-review hidden>
+          <strong data-compliance-review-label></strong>
+          <p data-compliance-review-message></p>
+        </div>
+        <p data-compliance-status hidden></p>
+        <button type="button" data-compliance-submit hidden>Submit for review</button>
+        <button type="button" data-compliance-refresh>Refresh</button>
+        <button type="button" data-compliance-close>Close</button>
+      </dialog>
+    </main>
+    <script>
+      const root = document.querySelector('[data-sfc-tools-root]');
+      root.dataset.customerLoggedIn = new URLSearchParams(location.search).get('loggedIn') === '1' ? 'true' : 'false';
+    </script>
+    <script src="/extensions/storefront-tools/assets/sfc-tools.js" defer></script>
+  </body>
+</html>

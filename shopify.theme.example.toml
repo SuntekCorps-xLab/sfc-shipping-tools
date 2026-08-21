@@ -1,0 +1,4 @@
+# Copy this file to shopify.theme.toml for local theme development.
+
+[environments.default]
+store = "your-development-store.myshopify.com"

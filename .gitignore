@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.superpowers/sdd/
+node_modules/
+.npm-cache/
+.shopify/
+shopify.app.toml
+shopify.theme.toml
+prisma/*.sqlite
+prisma/*.sqlite-journal
+playwright-report/
+blob-report/
+test-results/
+coverage/
+/.react-router/
+/build

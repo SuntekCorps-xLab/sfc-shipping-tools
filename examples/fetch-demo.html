@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SFC API — fetch examples</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #16292f;
+        --line: #dfe4e2;
+        --mist: #f3f5f4;
+        --signal: #ff6b16;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background: var(--mist);
+        line-height: 1.5;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 4rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 0.5rem;
+      }
+      .lede {
+        color: #647277;
+        margin-bottom: 1.5rem;
+      }
+      section {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+      h2 {
+        font-size: 1rem;
+        margin: 0 0 0.75rem;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        margin-bottom: 0.35rem;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.55rem 0.65rem;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+      button {
+        background: var(--signal);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 0.55rem 1rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      pre {
+        background: #0f1c20;
+        color: #e8f0ee;
+        border-radius: 8px;
+        padding: 0.85rem;
+        overflow: auto;
+        font-size: 0.8rem;
+        min-height: 4rem;
+      }
+      .note {
+        font-size: 0.85rem;
+        color: #647277;
+        margin-top: 1rem;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>SFC App Proxy — fetch examples</h1>
+      <p class="lede">
+        Minimal third-party sample. Open this page <strong>on a Shopify store</strong> that has the
+        SFC App Proxy installed (same origin as <code>/apps/sfc-tools</code>). Opening as a local
+        file will not receive Shopify’s signed proxy query string.
+      </p>
+
+      <section>
+        <h2>Config</h2>
+        <label for="apiBase">API base</label>
+        <input id="apiBase" value="/apps/sfc-tools" />
+      </section>
+
+      <section>
+        <h2>1. Quote rates</h2>
+        <div class="row">
+          <div>
+            <label for="country">Country (ISO)</label>
+            <input id="country" value="US" />
+          </div>
+          <div>
+            <label for="zip">Postal code</label>
+            <input id="zip" value="10001" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="weight">Weight (kg)</label>
+            <input id="weight" type="number" step="0.01" value="1" />
+          </div>
+          <div>
+            <label for="length">L × W × H (cm)</label>
+            <input id="dims" value="20,15,10" />
+          </div>
+        </div>
+        <button type="button" id="btnRates">POST /rates</button>
+        <pre id="outRates">{}</pre>
+      </section>
+
+      <section>
+        <h2>2. Track shipment</h2>
+        <label for="tracking">Tracking number</label>
+        <input id="tracking" placeholder="SF…" />
+        <button type="button" id="btnTrack">POST /tracking</button>
+        <pre id="outTrack">{}</pre>
+      </section>
+
+      <section>
+        <h2>3. Link account (requires Shopify customer login)</h2>
+        <p>The server derives the customer from the verified App Proxy request. No identity is sent from this form.</p>
+        <button type="button" id="btnLink">POST /account-link</button>
+        <pre id="outLink">{}</pre>
+      </section>
+
+      <p class="note">
+        Source helpers live in
+        <code>extensions/storefront-tools/src/api.js</code>. See the repository README for the full
+        API list and auth model.
+      </p>
+    </main>
+
+    <script type="module">
+      const $ = (id) => document.getElementById(id);
+
+      function base() {
+        return String($('apiBase').value || '/apps/sfc-tools').replace(/\/+$/, '');
+      }
+
+      async function post(path, body) {
+        const res = await fetch(`${base()}/${path}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify(body),
+        });
+        const text = await res.text();
+        try {
+          return { status: res.status, body: JSON.parse(text) };
+        } catch {
+          return { status: res.status, body: text };
+        }
+      }
+
+      function show(el, data) {
+        el.textContent = JSON.stringify(data, null, 2);
+      }
+
+      $('btnRates').addEventListener('click', async () => {
+        const [length, width, height] = String($('dims').value)
+          .split(',')
+          .map((n) => Number(String(n).trim()));
+        $('btnRates').disabled = true;
+        try {
+          show(
+            $('outRates'),
+            await post('rates', {
+              country: $('country').value.trim().toUpperCase(),
+              state: '',
+              city: '',
+              zipCode: $('zip').value.trim().toUpperCase(),
+              weight: Number($('weight').value),
+              length,
+              width,
+              height,
+            }),
+          );
+        } finally {
+          $('btnRates').disabled = false;
+        }
+      });
+
+      $('btnTrack').addEventListener('click', async () => {
+        $('btnTrack').disabled = true;
+        try {
+          show(
+            $('outTrack'),
+            await post('tracking', {
+              trackingNumber: $('tracking').value.trim().toUpperCase(),
+            }),
+          );
+        } finally {
+          $('btnTrack').disabled = false;
+        }
+      });
+
+      $('btnLink').addEventListener('click', async () => {
+        $('btnLink').disabled = true;
+        try {
+          show(
+            $('outLink'),
+            await post('account-link', {}),
+          );
+        } finally {
+          $('btnLink').disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,114 @@
+/* Design tokens, reset, hide theme chrome */
+/* Hide theme chrome when SFC page is embedded without layout:false */
+body:has(.sfc-standalone[data-sfc-tools-root])
+  .shopify-section-group-header-group,
+body:has(.sfc-standalone[data-sfc-tools-root])
+  .shopify-section-group-footer-group {
+  display: none !important;
+}
+
+body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
+  margin: 0;
+  padding: 0;
+}
+
+/* SFC storefront tools — design tokens and base */
+.sfc-standalone {
+  --signal: #ff6b16;
+  --signal-dark: #df4f00;
+  --signal-soft: #fff1e8;
+  --ink: #16292f;
+  --ink-soft: #2f4349;
+  --slate: #647277;
+  --mist: #f3f5f4;
+  --line: #dfe4e2;
+  --white: #ffffff;
+  --success: #16845b;
+  --warning: #b74f1a;
+  --shadow: 0 18px 55px rgba(22, 41, 47, 0.09);
+  --container: 1200px;
+  --display: "Arial Narrow", "Aptos Display", "Segoe UI", sans-serif;
+  --body: "Aptos", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+.sfc-standalone * {
+  box-sizing: border-box;
+}
+.sfc-standalone {
+  scroll-behavior: smooth;
+}
+.sfc-standalone {
+  margin: 0;
+  color: var(--ink);
+  background: var(--white);
+  font-family: var(--body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.sfc-standalone button,
+.sfc-standalone input,
+.sfc-standalone select {
+  font: inherit;
+}
+.sfc-standalone button,
+.sfc-standalone a,
+.sfc-standalone select {
+  -webkit-tap-highlight-color: transparent;
+}
+.sfc-standalone a {
+  color: inherit;
+  text-decoration: none;
+}
+.sfc-standalone img,
+.sfc-standalone svg {
+  display: block;
+  max-width: 100%;
+}
+.sfc-standalone h1,
+.sfc-standalone h2,
+.sfc-standalone h3,
+.sfc-standalone p {
+  margin-top: 0;
+}
+.sfc-standalone .container {
+  width: min(calc(100% - 40px), var(--container));
+  margin-inline: auto;
+}
+.sfc-standalone .skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  padding: 10px 14px;
+  color: var(--white);
+  background: var(--ink);
+  border-radius: 6px;
+  transform: translateY(-160%);
+}
+.sfc-standalone .skip-link:focus {
+  transform: translateY(0);
+}
+.sfc-standalone :focus-visible {
+  outline: 3px solid rgba(255, 107, 22, 0.42);
+  outline-offset: 3px;
+}
+.sfc-standalone .demo-ribbon {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 20px;
+  color: #6f2a08;
+  background: #fff0e7;
+  border-bottom: 1px solid #ffd7bf;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.sfc-standalone .demo-ribbon__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 4px rgba(255, 107, 22, 0.14);
+}

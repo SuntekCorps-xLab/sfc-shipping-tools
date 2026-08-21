@@ -1,0 +1,1059 @@
+{% comment %}
+  SFC storefront tools (rates, tracking, balance, orders).
+{% endcomment %}
+{{ 'sfc-tools.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sfc-tools.js' | asset_url }}" defer></script>
+
+{% assign register_url = block.settings.register_url | default: 'https://ffment.sendfromchina.com/register?from=english' %}
+{% assign login_url = block.settings.login_url | default: 'https://www.sendfromchina.com/login' %}
+{% assign seo_title = block.settings.seo_title | default: 'Ship from China with SFC | Live Rates, Tracking & Balance' %}
+{% assign seo_description = block.settings.seo_description | default: 'Compare SFC shipping rates from China, sign in with Shopify, top up your SFC balance, place shipments, and track packages in one place.' %}
+{%- assign sfc_return_to = request.path | default: '/' -%}
+{%- if sfc_return_to == blank -%}
+  {%- assign sfc_return_to = '/' -%}
+{%- endif -%}
+{%- if routes.storefront_login_url != blank -%}
+  {%- assign sfc_shopify_login_url = routes.storefront_login_url -%}
+{%- else -%}
+  {%- capture sfc_shopify_login_url -%}/customer_authentication/login?return_to={{ sfc_return_to | url_encode }}{%- endcapture -%}
+{%- endif -%}
+
+<script>
+  (function () {
+    var title = {{ seo_title | json }};
+    var description = {{ seo_description | json }};
+    var faviconUrl = {{ 'favicon.ico' | asset_url | json }};
+    if (title) document.title = title;
+    if (faviconUrl && document.head) {
+      var icon = document.head.querySelector('link[rel="icon"]');
+      if (!icon) {
+        icon = document.createElement('link');
+        icon.setAttribute('rel', 'icon');
+        document.head.appendChild(icon);
+      }
+      icon.setAttribute('type', 'image/png');
+      icon.setAttribute('href', faviconUrl);
+      var shortcut = document.head.querySelector('link[rel="shortcut icon"]');
+      if (!shortcut) {
+        shortcut = document.createElement('link');
+        shortcut.setAttribute('rel', 'shortcut icon');
+        document.head.appendChild(shortcut);
+      }
+      shortcut.setAttribute('type', 'image/png');
+      shortcut.setAttribute('href', faviconUrl);
+    }
+    function upsertMeta(attr, key, value) {
+      if (!value || !document.head) return;
+      var el = document.head.querySelector('meta[' + attr + '="' + key + '"]');
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', value);
+    }
+    upsertMeta('name', 'description', description);
+    upsertMeta('property', 'og:title', title);
+    upsertMeta('property', 'og:description', description);
+    upsertMeta('name', 'twitter:title', title);
+    upsertMeta('name', 'twitter:description', description);
+  })();
+</script>
+
+<div
+  class="sfc-standalone"
+  data-sfc-tools-root
+  data-api-base="{{ block.settings.api_base | escape }}"
+  data-analytics-product="sfc"
+  data-customer-logged-in="{% if customer %}true{% else %}false{% endif %}"
+  data-login-url="{{ sfc_shopify_login_url | escape }}"
+  {{ block.shopify_attributes }}
+>
+  <a class="skip-link" href="#SfcMain">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="utility-bar container">
+      <p>SFC customer support for ecommerce shipping from China.</p>
+      <div class="utility-links" aria-label="Utility navigation">
+        <a href="#SfcProcess">Service process</a>
+        <a href="#SfcTracking">Tracking help</a>
+        <span>EN</span>
+      </div>
+    </div>
+
+    <nav class="main-nav container" aria-label="Main navigation">
+      <a class="brand" href="#SfcTop" aria-label="SFC home">
+        <span class="brand__mark">SFC</span>
+        <span class="brand__swoop" aria-hidden="true"></span>
+        <span class="brand__caption">SEND FROM CHINA</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#SfcTop">Home</a>
+        <a href="#SfcCapabilities">Services</a>
+        <a href="#SfcRates">Shipping Rates</a>
+        <a href="#SfcOrders">My Orders</a>
+        <a href="#SfcTracking">Track Package</a>
+        <a href="#SfcProcess">How It Works</a>
+      </div>
+
+      <div class="account-entry">
+        {% if customer %}
+          {%- assign sfc_avatar_letter = customer.email | slice: 0, 1 | upcase -%}
+          <div class="account-menu" data-account-menu>
+            <button
+              type="button"
+              class="account-menu__trigger"
+              data-account-menu-trigger
+              aria-expanded="false"
+              aria-haspopup="true"
+              aria-controls="SfcAccountPanel-{{ block.id }}"
+            >
+              <span class="account-menu__avatar" aria-hidden="true">{{ sfc_avatar_letter }}</span>
+              <span class="account-menu__email" title="{{ customer.email | escape }}">{{ customer.email | escape }}</span>
+              <span class="account-menu__caret" aria-hidden="true"></span>
+            </button>
+            <div
+              class="account-menu__panel"
+              id="SfcAccountPanel-{{ block.id }}"
+              data-account-menu-panel
+              hidden
+            >
+              <div class="account-menu__row">
+                <span>Customer ID</span>
+                <strong data-header-user-code>Linking…</strong>
+              </div>
+              <div class="account-menu__row">
+                <span>Balance</span>
+                <strong class="account-menu__balance">
+                  <span data-header-balance>—</span>
+                  <span data-header-currency></span>
+                </strong>
+              </div>
+              <p class="account-menu__balance-usd" data-header-balance-usd hidden></p>
+              <a class="button button--ghost button--wide" href="/pages/shipping-center">
+                Shipping Center
+              </a>
+              <button type="button" class="button button--ghost button--wide" data-compliance-open>
+                Account verification
+              </button>
+              <a class="button button--ghost button--wide account-menu__logout" href="{{ routes.account_logout_url }}">
+                Log out
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <a class="button button--primary" href="{{ sfc_shopify_login_url }}">Log in</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  <div class="pending-order-banner" data-pending-order-banner hidden>
+    <div class="container pending-order-banner__inner">
+      <p class="pending-order-banner__text" data-pending-order-message></p>
+      <div class="pending-order-banner__actions">
+        <button type="button" class="button button--primary" data-pending-order-continue>
+          Start over — check rates
+        </button>
+        <button type="button" class="button button--ghost" data-pending-order-dismiss>
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main id="SfcMain">
+    <section class="hero" id="SfcTop">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow">CHINA FULFILLMENT · GLOBAL DELIVERY</p>
+          <h1>
+            <span class="hero__line hero__line--ink">{{ block.settings.heading | escape }}</span>
+            <span class="hero__line hero__line--signal">{{ block.settings.accent_heading | escape }}</span>
+          </h1>
+          <p class="hero__lede">{{ block.settings.intro | escape }}</p>
+
+          <ul class="hero__proofs">
+            <li><strong>220+</strong><span>Countries &amp; regions</span></li>
+            <li><strong>50+</strong><span>Logistics partners</span></li>
+            <li><strong>Full</strong><span>Milestone visibility</span></li>
+          </ul>
+
+          <div class="hero__actions">
+            <a class="button button--primary" href="#SfcRates">Check live rates</a>
+            {% if customer %}
+            {% else %}
+              <a class="button button--ghost" href="{{ sfc_shopify_login_url }}">Sign in to ship</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="dispatch-board" aria-label="Warehouse-to-global-delivery illustration">
+          <div class="dispatch-board__label">
+            <span>SFC / CHINA</span>
+            <strong>Dispatch board</strong>
+          </div>
+          <div class="warehouse-grid" aria-hidden="true">
+            <span class="shelf shelf--one"></span>
+            <span class="shelf shelf--two"></span>
+            <span class="shelf shelf--three"></span>
+            <span class="parcel parcel--one">SFC</span>
+            <span class="parcel parcel--two"></span>
+            <span class="parcel parcel--three"></span>
+            <span class="parcel parcel--four">CN</span>
+            <svg class="route-line" viewBox="0 0 480 270" aria-hidden="true">
+              <path d="M54 214 C150 236, 178 126, 272 148 S386 80, 445 64" />
+              <circle cx="54" cy="214" r="6" />
+              <circle cx="272" cy="148" r="6" />
+              <circle cx="445" cy="64" r="8" />
+            </svg>
+            <span class="plane">➤</span>
+          </div>
+          <div class="dispatch-card">
+            <div>
+              <span class="dispatch-card__kicker">LATEST MOVEMENT</span>
+              <strong>Flight departed</strong>
+              <small>HKG → LAX · 14:36 CST</small>
+            </div>
+            <span class="status-pill"><i></i> In transit</span>
+          </div>
+          <a class="hero-track" href="#SfcTracking">
+            <span>Track your order</span>
+            <strong>Enter tracking number</strong>
+            <i aria-hidden="true">→</i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="capabilities container" id="SfcCapabilities" aria-label="Core services">
+      <article><span class="capability-icon" aria-hidden="true">⌂</span><div><strong>China Warehousing</strong><small>Inventory control · Inbound inspection</small></div></article>
+      <article><span class="capability-icon" aria-hidden="true">▣</span><div><strong>Ecommerce Fulfillment</strong><small>Pick &amp; pack · Multi-channel orders</small></div></article>
+      <article><span class="capability-icon" aria-hidden="true">◎</span><div><strong>Global Shipping</strong><small>Multiple routes · Door-to-door</small></div></article>
+      <article><span class="capability-icon" aria-hidden="true">↗</span><div><strong>Tracking Visibility</strong><small>Key milestones · Status timeline</small></div></article>
+    </section>
+
+    <section class="tool-section" id="SfcRates">
+      <div class="container section-heading section-heading--split">
+        <div>
+          <p class="eyebrow">LIVE SHIPPING COST CALCULATOR</p>
+          <h2>First mile + warehouse<br>to destination.</h2>
+        </div>
+        <p>
+          International rates are from our China warehouse to destination.
+          Choose drop-off or pickup for the China first mile, then compare routes.
+        </p>
+      </div>
+
+      <div class="container calculator-grid">
+        <form class="tool-card rate-form" data-rate-form novalidate>
+          <div class="tool-card__header">
+            <div>
+              <span class="step-label">01 · FIRST MILE</span>
+              <h3>How goods reach our warehouse</h3>
+            </div>
+          </div>
+
+          <fieldset class="first-mile-choice" data-first-mile-choice>
+            <legend class="visually-hidden">First-mile option</legend>
+            <label class="first-mile-option is-selected">
+              <input type="radio" name="firstMileMode" value="pickup" checked data-first-mile-mode>
+              <span class="first-mile-option__body">
+                <strong>Pickup</strong>
+                <small>We collect · SF-like estimate</small>
+              </span>
+            </label>
+            <label class="first-mile-option">
+              <input type="radio" name="firstMileMode" value="dropoff" data-first-mile-mode>
+              <span class="first-mile-option__body">
+                <strong>Drop off</strong>
+                <small>You ship to our warehouse</small>
+              </span>
+            </label>
+          </fieldset>
+
+          <div class="pickup-origin" data-pickup-origin>
+            <label class="field">
+              <span>Pickup province (China)</span>
+              <select name="pickupProvince" data-pickup-province data-enhance-select required>
+                <option value="" selected>Select province</option>
+                <option value="Guangdong">Guangdong 广东</option>
+                <option value="Hunan">Hunan 湖南</option>
+                <option value="Jiangxi">Jiangxi 江西</option>
+                <option value="Fujian">Fujian 福建</option>
+                <option value="Guangxi">Guangxi 广西</option>
+                <option value="Hainan">Hainan 海南</option>
+                <option value="Zhejiang">Zhejiang 浙江</option>
+                <option value="Jiangsu">Jiangsu 江苏</option>
+                <option value="Shanghai">Shanghai 上海</option>
+                <option value="Anhui">Anhui 安徽</option>
+                <option value="Hubei">Hubei 湖北</option>
+                <option value="Henan">Henan 河南</option>
+                <option value="Shandong">Shandong 山东</option>
+                <option value="Beijing">Beijing 北京</option>
+                <option value="Tianjin">Tianjin 天津</option>
+                <option value="Hebei">Hebei 河北</option>
+                <option value="Shanxi">Shanxi 山西</option>
+                <option value="Chongqing">Chongqing 重庆</option>
+                <option value="Sichuan">Sichuan 四川</option>
+                <option value="Guizhou">Guizhou 贵州</option>
+                <option value="Yunnan">Yunnan 云南</option>
+                <option value="Shaanxi">Shaanxi 陕西</option>
+                <option value="Liaoning">Liaoning 辽宁</option>
+                <option value="Jilin">Jilin 吉林</option>
+                <option value="Heilongjiang">Heilongjiang 黑龙江</option>
+                <option value="InnerMongolia">Inner Mongolia 内蒙古</option>
+                <option value="Gansu">Gansu 甘肃</option>
+                <option value="Qinghai">Qinghai 青海</option>
+                <option value="Ningxia">Ningxia 宁夏</option>
+                <option value="Xinjiang">Xinjiang 新疆</option>
+                <option value="Tibet">Tibet 西藏</option>
+              </select>
+            </label>
+            <p class="pickup-origin__hint">For estimate only. Full pickup address is asked when you order.</p>
+          </div>
+
+          <div class="warehouse-card" data-warehouse-card hidden>
+            <div class="warehouse-card__head">
+              <span class="step-label">WAREHOUSE DROP-OFF</span>
+              <button type="button" class="button button--ghost button--compact" data-copy-warehouse {% unless customer %}hidden{% endunless %}>Copy address</button>
+            </div>
+            {% if customer %}
+              <p class="warehouse-card__line" data-warehouse-address>广东省惠州市惠阳区白石村明泰路17号朝鲲产业园,三态速递一楼</p>
+              <p class="warehouse-card__meta">
+                <span>收件人：<strong data-warehouse-contact>刘正+Y5169</strong></span>
+                <span>电话：<strong data-warehouse-phone>18938091512</strong></span>
+              </p>
+              <p class="warehouse-card__note">Mark your order reference on the parcel when you drop off.</p>
+            {% else %}
+              <p class="warehouse-card__line" data-warehouse-address>广东省惠州市**************</p>
+              <p class="warehouse-card__meta">
+                <span>收件人：<strong data-warehouse-contact>******</strong></span>
+                <span>电话：<strong data-warehouse-phone>***********</strong></span>
+              </p>
+              <p class="warehouse-card__note">Sign in to view the full warehouse address and copy it.</p>
+            {% endif %}
+          </div>
+
+          <div class="form-divider">
+            <span class="step-label">02 · DESTINATION</span>
+            <span>International leg</span>
+          </div>
+
+          <div class="form-grid form-grid--two">
+            <label class="field">
+              <span>Destination country / region</span>
+              <select name="country" required data-enhance-select>
+                <option value="" disabled selected hidden>Select destination</option>
+                <option value="US">United States</option>
+                <option value="GB">United Kingdom</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="AU">Australia</option>
+                <option value="CA">Canada</option>
+                <option value="JP">Japan</option>
+                <option value="MX">Mexico</option>
+              </select>
+            </label>
+            <label class="field">
+                <span>State / Province <small>(optional)</small></span>
+                <input name="state" type="text" maxlength="100" placeholder="Optional, e.g. CA" autocomplete="address-level1">
+              </label>
+              <label class="field">
+                <span>City <small>(optional)</small></span>
+                <input name="city" type="text" maxlength="100" placeholder="Optional, e.g. Los Angeles" autocomplete="address-level2">
+              </label>
+              <label class="field">
+                <span>Postal code <small>(optional)</small></span>
+                <input name="zipCode" type="text" maxlength="20" placeholder="Optional, e.g. 90001" autocomplete="postal-code">
+              </label>
+          </div>
+
+          <div class="form-divider">
+            <span class="step-label">03 · PACKAGE</span>
+            <span>Units: kg / cm</span>
+          </div>
+
+          <div class="form-grid form-grid--package">
+            <label class="field"><span>Actual weight</span><div class="input-unit"><input name="weight" type="number" min="0.01" max="100" step="0.01" inputmode="decimal" value="1" placeholder="1" required><i>kg</i></div></label>
+            <label class="field"><span>Length</span><div class="input-unit"><input name="length" type="number" min="1" max="200" step="1" inputmode="numeric" value="1" placeholder="1" required><i>cm</i></div></label>
+            <label class="field"><span>Width</span><div class="input-unit"><input name="width" type="number" min="1" max="200" step="1" inputmode="numeric" value="1" placeholder="1" required><i>cm</i></div></label>
+            <label class="field"><span>Height</span><div class="input-unit"><input name="height" type="number" min="1" max="200" step="1" inputmode="numeric" value="1" placeholder="1" required><i>cm</i></div></label>
+          </div>
+
+          <div class="form-foot">
+            <p>Final eligibility and charges depend on SFC account terms and shipment inspection.</p>
+            <button class="button button--primary button--wide" type="submit">
+              Check SFC rates <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="results-panel" data-rate-results aria-live="polite">
+          <div class="empty-state">
+            <span class="empty-state__icon" aria-hidden="true">¥</span>
+            <p class="eyebrow">LIVE QUOTE</p>
+            <h3>Your SFC shipping options will appear here</h3>
+            <p>Complete the inputs to compare available services and prices.</p>
+            <ul>
+              <li>Returned by the SFC rates service</li>
+              <li>Based on parcel weight and dimensions</li>
+              <li>Pick a service to place an SFC order</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="container order-panel" data-order-panel hidden>
+        <div class="tool-card order-panel__card">
+          <div class="tool-card__header">
+            <div>
+              <span class="step-label">04 · PLACE ORDER</span>
+              <h3>Ship with <span data-order-service-name>selected service</span></h3>
+              <p class="order-panel__meta">
+                Service code: <strong data-order-service-code></strong>
+                · Quote: <strong data-order-service-price></strong>
+              </p>
+              <p class="order-panel__meta order-panel__meta--breakdown" data-order-price-breakdown hidden></p>
+            </div>
+            <button type="button" class="button button--ghost" data-action="cancel-order">Change service</button>
+          </div>
+          <form class="order-form" data-order-form novalidate>
+            <input type="hidden" name="shippingMethod" data-order-shipping-method>
+            <input type="hidden" name="country" data-order-country>
+            <div class="warehouse-card warehouse-card--order" data-order-warehouse-card hidden>
+              <div class="warehouse-card__head">
+                <span class="step-label">DROP OFF AT THIS WAREHOUSE</span>
+                <button type="button" class="button button--ghost button--compact" data-copy-warehouse>Copy address</button>
+              </div>
+              <p class="warehouse-card__line">广东省惠州市惠阳区白石村明泰路17号朝鲲产业园,三态速递一楼</p>
+              <p class="warehouse-card__meta">
+                <span>收件人：<strong>刘正+Y5169</strong></span>
+                <span>电话：<strong>18938091512</strong></span>
+              </p>
+            </div>
+            <div class="order-pickup-block" data-order-pickup-block hidden>
+              <div class="form-divider">
+                <span class="step-label">PICKUP IN CHINA</span>
+                <span>Where we collect your parcel</span>
+              </div>
+              <div class="form-grid form-grid--two">
+                <label class="field">
+                  <span>Pickup contact *</span>
+                  <input name="pickupContact" type="text" maxlength="80" autocomplete="name" data-order-pickup-contact>
+                </label>
+                <label class="field">
+                  <span>Pickup phone * <small>China mobile</small></span>
+                  <div class="phone-input phone-input--cn" data-order-pickup-phone-wrap>
+                    <span class="phone-input__country" title="China" aria-hidden="true">
+                      <span class="phone-input__flag">CN</span>
+                      <span class="phone-input__code">+86</span>
+                    </span>
+                    <input
+                      name="pickupPhone"
+                      type="tel"
+                      inputmode="numeric"
+                      maxlength="13"
+                      autocomplete="tel-national"
+                      placeholder="1XXXXXXXXXX"
+                      pattern="^1[3-9]\d{9}$"
+                      title="Enter an 11-digit China mobile number"
+                      data-order-pickup-phone
+                      required
+                    >
+                  </div>
+                </label>
+                <label class="field field--wide">
+                  <span>Pickup address *</span>
+                  <input name="pickupAddress" type="text" maxlength="200" autocomplete="street-address" data-order-pickup-address placeholder="省、市、街道、门牌号">
+                </label>
+              </div>
+              <p class="pickup-origin__hint">Our ops team will be notified after you place the order (manual pickup arrangement).</p>
+            </div>
+            <p class="order-panel__hint">
+              Enter shipper first, then recipient and customs details. You need to be signed in so the
+              shipment can use your linked SFC account. Shipper details are saved as your SFC default
+              sender for future orders.
+            </p>
+            <p class="order-fields-status" data-order-fields-status role="status" hidden></p>
+            <div class="form-divider" data-order-fields-send-heading>
+              <span class="step-label">SHIPPER</span>
+              <span>Your China / origin sender (saved as default)</span>
+            </div>
+            <div class="form-grid form-grid--two" data-order-fields-send>
+              <p class="order-fields-loading">Loading channel requirements…</p>
+            </div>
+            <div class="form-divider" data-order-fields-recipient-heading hidden>
+              <span class="step-label">RECIPIENT</span>
+              <span>Where the parcel is delivered</span>
+            </div>
+            <div class="form-grid form-grid--two" data-order-fields-recipient hidden></div>
+            <div class="form-divider" data-order-fields-customs-heading hidden>
+              <span class="step-label">CUSTOMS</span>
+              <span>Declare items in this parcel (add lines for cup, bottle, etc.)</span>
+            </div>
+            <div class="order-items" data-order-fields-details hidden>
+              <div class="order-items__list" data-order-items-list></div>
+              <button type="button" class="button button--ghost order-items__add" data-order-item-add>
+                + Add item
+              </button>
+              <div class="form-grid form-grid--two order-items__extras" data-order-items-extras></div>
+            </div>
+            <section class="cargo-gate" data-cargo-gate aria-labelledby="SfcCargoGate-{{ block.id }}">
+              <div class="cargo-gate__header">
+                <div>
+                  <span class="step-label">SHIPMENT SAFETY GATE</span>
+                  <h4 id="SfcCargoGate-{{ block.id }}">Declare what is inside this parcel</h4>
+                </div>
+                <span class="cargo-gate__badge">Checked before booking</span>
+              </div>
+              <p class="cargo-gate__intro">
+                Select every characteristic that applies. SFC and the selected carrier make the final transport decision.
+              </p>
+              <div class="cargo-gate__options">
+                <label><input type="checkbox" value="battery" data-cargo-flag> Batteries or battery-powered items</label>
+                <label><input type="checkbox" value="liquid" data-cargo-flag> Liquids, gels, or pastes</label>
+                <label><input type="checkbox" value="powder" data-cargo-flag> Powders or granular materials</label>
+                <label><input type="checkbox" value="aerosol" data-cargo-flag> Aerosols, pressurized containers, or gas</label>
+                <label><input type="checkbox" value="magnetic" data-cargo-flag> Magnets or strongly magnetic items</label>
+                <label><input type="checkbox" value="chemical" data-cargo-flag> Chemicals, flammable, corrosive, or toxic materials</label>
+                <label><input type="checkbox" value="food" data-cargo-flag> Food, plants, seeds, or animal products</label>
+                <label><input type="checkbox" value="medicine" data-cargo-flag> Medicines or medical products</label>
+                <label><input type="checkbox" value="cosmetics" data-cargo-flag> Cosmetics, perfume, or skincare</label>
+                <label><input type="checkbox" value="otherRestricted" data-cargo-flag> Other regulated or restricted goods</label>
+              </div>
+              <label class="cargo-gate__none">
+                <input type="checkbox" data-cargo-none>
+                <span>None of the listed characteristics apply</span>
+              </label>
+              <div class="form-grid form-grid--two cargo-gate__details" data-cargo-details hidden>
+                <label class="field field--wide">
+                  <span>Cargo details *</span>
+                  <textarea data-cargo-description maxlength="1000" rows="3" placeholder="Describe the product, material, quantity, packaging, and why the selected flags apply."></textarea>
+                </label>
+                <label class="field">
+                  <span>SDS / MSDS reference <small>(if available)</small></span>
+                  <input type="text" data-cargo-sds maxlength="120" placeholder="Document or report reference">
+                </label>
+                <label class="field">
+                  <span>UN number <small>(if applicable)</small></span>
+                  <input type="text" data-cargo-un maxlength="12" placeholder="e.g. UN3481">
+                </label>
+                <label class="field">
+                  <span>Dangerous goods class <small>(if known)</small></span>
+                  <input type="text" data-cargo-dg-class maxlength="32" placeholder="e.g. Class 9">
+                </label>
+              </div>
+              <label class="cargo-gate__attestation">
+                <input type="checkbox" data-cargo-attestation required>
+                <span>I confirm this declaration is complete and accurate. I understand that undeclared prohibited or dangerous goods may be rejected, returned, destroyed, or reported.</span>
+              </label>
+              <p class="cargo-gate__status" data-cargo-status role="status" hidden></p>
+            </section>
+            <div class="form-grid form-grid--two" data-order-fields-options hidden></div>
+            <div class="form-foot">
+              <p>You must be signed in with Shopify so the order can use your linked SFC account. Fields adapt to the selected SFC channel.</p>
+              <p class="recharge-status" data-order-submit-status role="status" hidden></p>
+              <button class="button button--primary button--wide" type="submit" data-order-submit>
+                Create SFC order <span aria-hidden="true">→</span>
+              </button>
+              <div class="order-success-guide" data-order-success-guide hidden>
+                <p class="order-success-guide__title" data-order-success-title></p>
+                <ol class="order-success-guide__steps">
+                  <li><strong>Print or download</strong> the shipping label.</li>
+                  <li><strong>Stick the label flat</strong> on the outside of the parcel (do not fold or cover the barcode).</li>
+                  <li data-order-success-step-firstmile></li>
+                </ol>
+                <div class="order-success-guide__actions">
+                  <button type="button" class="button button--primary" data-order-success-print>Open label</button>
+                  <button type="button" class="button button--ghost" data-order-success-download>Download PDF</button>
+                  <a class="button button--ghost" data-order-success-orders href="#SfcOrders">My orders</a>
+                </div>
+                <div class="order-domestic-tracking" data-order-domestic-tracking hidden>
+                  <p class="order-domestic-tracking__title">China domestic tracking</p>
+                  <p class="order-domestic-tracking__hint">
+                    If you ship this parcel to our warehouse with a China courier (e.g. Taobao / SF),
+                    please enter that domestic tracking number so we can match it to this SFC order.
+                  </p>
+                  <div class="order-domestic-tracking__form">
+                    <label class="field order-domestic-tracking__field">
+                      <span>Domestic tracking number *</span>
+                      <span class="order-domestic-tracking__row">
+                        <input
+                          type="text"
+                          name="domesticTrackingNo"
+                          maxlength="64"
+                          autocomplete="off"
+                          placeholder="e.g. SF1234567890"
+                          data-order-domestic-tracking-no
+                        >
+                        <button type="button" class="button button--primary" data-order-domestic-tracking-save>
+                          Save
+                        </button>
+                      </span>
+                    </label>
+                  </div>
+                  <p class="order-domestic-tracking__status" data-order-domestic-tracking-status role="status" hidden></p>
+                </div>
+                <p class="order-success-guide__note">If the label is not ready yet, open <strong>My orders</strong> in a minute and try again. You can also save domestic tracking later from My orders.</p>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="tool-section tool-section--orders" id="SfcOrders">
+      <div class="container section-heading section-heading--split">
+        <div>
+          <p class="eyebrow">MY SFC ORDERS</p>
+          <h2>Shipments on<br>your linked account.</h2>
+        </div>
+        <p>
+          Orders created in this store for your linked SFC customer.
+          Sign in with Shopify to load the list.
+        </p>
+      </div>
+
+      <div class="container">
+        <div class="tool-card orders-card" data-orders-panel>
+          <div class="tool-card__header">
+            <div>
+              <span class="step-label">ORDERS</span>
+              <h3>Recent shipments</h3>
+            </div>
+            {% if customer %}
+              <button type="button" class="button button--ghost" data-orders-refresh>
+                Refresh
+              </button>
+            {% else %}
+              <a class="button button--primary" href="{{ sfc_shopify_login_url }}">Sign in</a>
+            {% endif %}
+          </div>
+          <p class="orders-status" data-orders-status role="status" hidden></p>
+          <div class="orders-list-scroll">
+            <div class="orders-list" data-orders-list>
+              {% if customer %}
+                <p class="order-fields-loading">Loading your SFC orders…</p>
+              {% else %}
+                <div class="empty-state orders-empty">
+                  <p class="eyebrow">SIGN IN REQUIRED</p>
+                  <h3>See orders for your linked SFC account</h3>
+                  <p>After you sign in with Shopify, shipments placed here will appear in this list.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="orders-footer" data-orders-footer hidden>
+            <button type="button" class="button button--ghost button--wide" data-orders-more>
+              Show more orders
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <dialog class="order-detail-dialog" data-order-detail-dialog>
+        <div class="order-detail-dialog__panel">
+          <button type="button" class="dialog-close" data-order-detail-close aria-label="Close">×</button>
+          <p class="eyebrow">ORDER DETAIL</p>
+          <h2 data-order-detail-title>Shipment</h2>
+          <p class="order-detail-dialog__lede" data-order-detail-status></p>
+          <dl class="order-detail-grid" data-order-detail-body></dl>
+          <div class="order-domestic-tracking order-domestic-tracking--detail" data-order-detail-domestic>
+            <p class="order-domestic-tracking__title">China domestic tracking</p>
+            <p class="order-domestic-tracking__hint">
+              If you shipped this order to our warehouse with a China courier, save that tracking number here so we can match it.
+            </p>
+            <div class="order-domestic-tracking__form">
+              <label class="field order-domestic-tracking__field">
+                <span>Domestic tracking number *</span>
+                <span class="order-domestic-tracking__row">
+                  <input
+                    type="text"
+                    maxlength="64"
+                    autocomplete="off"
+                    placeholder="e.g. SF1234567890"
+                    data-order-detail-domestic-no
+                  >
+                  <button type="button" class="button button--primary" data-order-detail-domestic-save>
+                    Save
+                  </button>
+                </span>
+              </label>
+            </div>
+            <p class="order-domestic-tracking__status" data-order-detail-domestic-status role="status" hidden></p>
+          </div>
+          <div class="order-detail-dialog__actions">
+            <div class="label-menu" data-order-detail-label-menu>
+              <button
+                type="button"
+                class="button button--ghost label-menu__trigger"
+                data-order-detail-label-trigger
+                aria-expanded="false"
+                aria-haspopup="menu"
+              >
+                Label <span aria-hidden="true">▾</span>
+              </button>
+              <div class="label-menu__panel" data-order-detail-label-panel hidden role="menu">
+                <button type="button" class="label-menu__item" data-order-detail-print role="menuitem">
+                  Open label
+                </button>
+                <button type="button" class="label-menu__item" data-order-detail-download role="menuitem">
+                  Download PDF
+                </button>
+              </div>
+            </div>
+            <button type="button" class="button button--ghost" data-order-detail-track>Track shipment</button>
+            <button type="button" class="button button--primary" data-order-detail-close>Close</button>
+          </div>
+        </div>
+      </dialog>
+    </section>
+
+    <section class="tracking-section" id="SfcTracking">
+      <div class="container tracking-grid">
+        <div class="tracking-intro">
+          <p class="eyebrow">TRACK YOUR ORDER</p>
+          <h2>One valid tracking number.<br>The full journey in view.</h2>
+          <p>
+            Enter a 5–50 character tracking number from <strong>your</strong> SFC shipments.
+            Sign in with Shopify first — you can only track your own orders.
+          </p>
+          <form class="tracking-form" data-tracking-form novalidate>
+            <label for="SfcTrackingInput-{{ block.id }}">Package tracking number</label>
+            <div class="tracking-input">
+              <input
+                id="SfcTrackingInput-{{ block.id }}"
+                data-tracking-number
+                name="trackingNumber"
+                type="text"
+                minlength="5"
+                maxlength="50"
+                placeholder="e.g. RR123456789CN"
+                autocomplete="off"
+                spellcheck="false"
+                required
+              >
+              <button type="submit">Track package <span aria-hidden="true">→</span></button>
+            </div>
+          </form>
+        </div>
+
+        <div class="tracking-results" aria-live="polite">
+          <div class="tracking-provider">
+            <span>LIVE TRACKING PROVIDED BY</span>
+            <strong data-tracking-provider>SFC</strong>
+          </div>
+          <div class="tracking-widget-container" data-tracking-widget>
+            <div class="tracking-placeholder">
+              <div class="tracking-placeholder__route" aria-hidden="true">
+                <span>CN</span><i></i><b>•••</b><i></i><span>US</span>
+              </div>
+              <h3>Live SFC tracking will appear here</h3>
+              <p>Submit a valid tracking number to view the latest status and shipment milestones.</p>
+            </div>
+          </div>
+          <p class="tracking-disclosure">Your tracking number is sent securely to SFC only when you submit this form.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="process-section" id="SfcProcess">
+      <div class="container section-heading">
+        <p class="eyebrow">HOW SFC WORKS</p>
+        <h2>From a live quote to your first shipment — in this store.</h2>
+      </div>
+      <div class="container process-grid">
+        <article>
+          <span>01</span>
+          <div>
+            <small>COMPARE</small>
+            <h3>Check a live route</h3>
+            <p>Enter destination and parcel details to compare SFC services and prices. No login required.</p>
+          </div>
+        </article>
+        <article>
+          <span>02</span>
+          <div>
+            <small>SIGN IN</small>
+            <h3>Sign in with Shopify</h3>
+            <p>Log in (or create a store account). SFC securely resolves your approved customer mapping on the server.</p>
+          </div>
+        </article>
+        <article>
+          <span>03</span>
+          <div>
+            <small>SHIP</small>
+            <h3>Top up and place the order</h3>
+            <p>Pay a balance top-up in Shopify Checkout if needed, then submit the shipment with your linked SFC account.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="closing-cta">
+      <div class="container closing-cta__inner">
+        <div>
+          <p class="eyebrow">READY TO SHIP WITH SFC?</p>
+          {% if customer %}
+            <h2>Check rates, top up your balance, and place your next shipment.</h2>
+          {% else %}
+            <h2>Sign in with Shopify to link SFC and start shipping from this store.</h2>
+          {% endif %}
+        </div>
+        {% if customer %}
+          <a class="button button--light" href="#SfcRates">Check SFC rates</a>
+        {% else %}
+          <a class="button button--light" href="{{ sfc_shopify_login_url }}">Sign in to continue</a>
+        {% endif %}
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand brand--footer" href="#SfcTop" aria-label="Back to top">
+          <span class="brand__mark">SFC</span><span class="brand__swoop"></span>
+        </a>
+        <p>Ecommerce fulfillment, live freight rates and SFC tracking.</p>
+      </div>
+      <div>
+        <strong>Tools</strong>
+        <a href="#SfcRates">Shipping rates</a>
+        <a href="#SfcOrders">My orders</a>
+        <a href="#SfcTracking">Track package</a>
+      </div>
+      <div>
+        <strong>Account</strong>
+        {% if customer %}
+          <a href="#SfcOrders">My orders</a>
+          <a href="{{ routes.account_logout_url }}">Log out</a>
+        {% else %}
+          <a href="{{ sfc_shopify_login_url }}">Sign in with Shopify</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span data-current-year></span> SFC Shipping Tools</span>
+      <span>Live results require the server-side SFC gateway.</span>
+    </div>
+  </footer>
+
+  <dialog class="order-detail-dialog" data-compliance-dialog>
+    <div class="order-detail-dialog__panel">
+      <button type="button" class="dialog-close" data-compliance-close aria-label="Close">×</button>
+      <p class="eyebrow">Required before shipping</p>
+      <h2>Account verification</h2>
+      <p class="order-detail-dialog__lede">
+        Upload document photos, complete your profile, and submit it for review. Orders unlock only after SFC approval.
+        Personal: passport + holding-passport selfie. Enterprise: business license + legal rep ID.
+      </p>
+
+      <div class="sfc-compliance-review" data-compliance-review hidden data-tone="neutral">
+        <strong data-compliance-review-label>Information required</strong>
+        <p data-compliance-review-message>Complete your profile and documents to continue.</p>
+      </div>
+
+      <fieldset class="sfc-compliance-account">
+        <legend>Account type</legend>
+        <label class="sfc-center-problem-option">
+          <input type="radio" name="sfcComplianceAccountClass" value="1" data-compliance-account-class>
+          <span>
+            <strong>Personal</strong>
+            <small>Passport page + holding-passport selfie (one box each)</small>
+          </span>
+        </label>
+        <label class="sfc-center-problem-option">
+          <input type="radio" name="sfcComplianceAccountClass" value="2" data-compliance-account-class>
+          <span>
+            <strong>Enterprise</strong>
+            <small>Business license + legal representative ID</small>
+          </span>
+        </label>
+      </fieldset>
+
+      <p class="sfc-center-orders-status" data-compliance-status role="status" hidden></p>
+
+      <div class="sfc-compliance-slots" data-compliance-slots hidden>
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="license" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--license"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Business license</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Clear scan or photo of the company business license.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="passport" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--passport"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Passport</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Photo of the passport information page.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="holding" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--holding"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Holding passport</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Selfie holding your passport next to your face.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="identity" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--id"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Legal representative ID</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Front and back recommended. Multiple images OK.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sfc-compliance-profile" data-compliance-profile hidden>
+        <p class="sfc-compliance-profile__hint">Fill in your details below. Upload document photos above too — both are required before placing orders.</p>
+        <div class="sfc-compliance-profile__grid">
+          <label class="sfc-compliance-field" data-compliance-field="company" hidden>
+            <span>Company name</span>
+            <input type="text" data-compliance-company autocomplete="organization" maxlength="255" placeholder="Registered company name">
+          </label>
+          <label class="sfc-compliance-field" data-compliance-field="trueName">
+            <span data-compliance-true-name-label>Full name</span>
+            <input type="text" data-compliance-true-name autocomplete="name" maxlength="255" placeholder="As on passport / ID">
+          </label>
+          <label class="sfc-compliance-field" data-compliance-field="creditId">
+            <span data-compliance-credit-id-label>Passport number</span>
+            <input type="text" data-compliance-credit-id maxlength="255" placeholder="Document number">
+          </label>
+          <label class="sfc-compliance-field" data-compliance-field="cardId" hidden>
+            <span>Legal representative ID number</span>
+            <input type="text" data-compliance-card-id maxlength="64" placeholder="Passport / national ID number">
+          </label>
+        </div>
+        <button type="button" class="button button--ghost button--compact" data-compliance-profile-save>
+          Save profile
+        </button>
+      </div>
+
+      <div class="order-detail-dialog__actions">
+        <button type="button" class="button button--ghost" data-compliance-close>Close</button>
+        <button type="button" class="button button--primary" data-compliance-refresh>Refresh status</button>
+        <button type="button" class="button button--primary" data-compliance-submit hidden>Submit for review</button>
+      </div>
+    </div>
+  </dialog>
+
+  <button
+    type="button"
+    class="sfc-back-top"
+    data-sfc-back-top
+    aria-label="Back to top"
+    title="Back to top"
+    hidden
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        fill="currentColor"
+        d="M12 5.5 5.5 12l1.4 1.4L11 9.3V19h2V9.3l4.1 4.1L18.5 12 12 5.5z"
+      />
+    </svg>
+  </button>
+</div>
+
+{% schema %}
+{
+  "name": "SFC shipping tools",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Ship from China,"
+    },
+    {
+      "type": "text",
+      "id": "accent_heading",
+      "label": "Accent heading",
+      "default": "with every step in view."
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "label": "Introduction",
+      "default": "Compare SFC routes, sign in with Shopify, top up your balance in-store, and move from a first quote to your next shipment."
+    },
+    {
+      "type": "text",
+      "id": "api_base",
+      "label": "API base path",
+      "default": "/apps/sfc-tools",
+      "info": "Storefront App Proxy base path, e.g. /apps/sfc-tools. Never put API keys here."
+    },
+    {
+      "type": "text",
+      "id": "register_url",
+      "label": "SFC registration URL",
+      "default": "https://ffment.sendfromchina.com/register?from=english"
+    },
+    {
+      "type": "text",
+      "id": "login_url",
+      "label": "SFC login URL",
+      "default": "https://www.sendfromchina.com/login"
+    },
+    {
+      "type": "text",
+      "id": "seo_title",
+      "label": "SEO title",
+      "default": "Ship from China with SFC | Live Rates, Tracking & Balance"
+    },
+    {
+      "type": "textarea",
+      "id": "seo_description",
+      "label": "SEO description",
+      "default": "Compare SFC shipping rates from China, sign in with Shopify, top up your SFC balance, place shipments, and track packages in one place."
+    }
+  ]
+}
+{% endschema %}

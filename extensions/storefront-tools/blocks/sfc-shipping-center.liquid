@@ -1,0 +1,359 @@
+{% comment %}
+  SFC Shipping Center — Overview / My orders.
+  Theme section / page template: page.shipping-center
+{% endcomment %}
+{{ 'sfc-tools.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sfc-tools.js' | asset_url }}" defer></script>
+
+{%- assign sfc_return_to = request.path | default: '/pages/shipping-center' -%}
+{%- if routes.storefront_login_url != blank -%}
+  {%- assign sfc_shopify_login_url = routes.storefront_login_url -%}
+{%- else -%}
+  {%- capture sfc_shopify_login_url -%}/customer_authentication/login?return_to={{ sfc_return_to | url_encode }}{%- endcapture -%}
+{%- endif -%}
+{%- assign sfc_api_base = block.settings.api_base | default: '/apps/sfc-tools' -%}
+
+<script>
+  (function () {
+    document.title = 'Shipping Center | SFC';
+    var faviconUrl = {{ 'favicon.ico' | asset_url | json }};
+    if (faviconUrl && document.head) {
+      var icon = document.head.querySelector('link[rel="icon"]');
+      if (!icon) {
+        icon = document.createElement('link');
+        icon.setAttribute('rel', 'icon');
+        document.head.appendChild(icon);
+      }
+      icon.setAttribute('type', 'image/png');
+      icon.setAttribute('href', faviconUrl);
+    }
+  })();
+</script>
+
+<div
+  class="sfc-standalone sfc-shipping-center"
+  data-sfc-tools-root
+  data-sfc-shipping-center
+  data-api-base="{{ sfc_api_base | escape }}"
+  data-customer-logged-in="{% if customer %}true{% else %}false{% endif %}"
+  data-login-url="{{ sfc_shopify_login_url | escape }}"
+  {{ block.shopify_attributes }}
+>
+  <a class="skip-link" href="#SfcCenterMain">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="utility-bar container">
+      <p>SFC customer support for ecommerce shipping from China.</p>
+      <div class="utility-links" aria-label="Utility navigation">
+        <a href="/#SfcProcess">Service process</a>
+        <a href="/#SfcTracking">Tracking help</a>
+        <span>EN</span>
+      </div>
+    </div>
+
+    <nav class="main-nav container" aria-label="Main navigation">
+      <a class="brand" href="/" aria-label="SFC home">
+        <span class="brand__mark">SFC</span>
+        <span class="brand__swoop" aria-hidden="true"></span>
+        <span class="brand__caption">SEND FROM CHINA</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/#SfcCapabilities">Services</a>
+        <a href="/#SfcRates">Shipping Rates</a>
+        <a href="/#SfcOrders">My Orders</a>
+        <a href="/#SfcTracking">Track Package</a>
+        <a href="/#SfcProcess">How It Works</a>
+      </div>
+
+      <div class="account-entry">
+        {% if customer %}
+          {%- assign sfc_avatar_letter = customer.email | slice: 0, 1 | upcase -%}
+          <div class="account-menu" data-account-menu>
+            <button
+              type="button"
+              class="account-menu__trigger"
+              data-account-menu-trigger
+              aria-expanded="false"
+              aria-haspopup="true"
+              aria-controls="SfcCenterAccountPanel"
+            >
+              <span class="account-menu__avatar" aria-hidden="true">{{ sfc_avatar_letter }}</span>
+              <span class="account-menu__email" title="{{ customer.email | escape }}">{{ customer.email | escape }}</span>
+              <span class="account-menu__caret" aria-hidden="true"></span>
+            </button>
+            <div
+              class="account-menu__panel"
+              id="SfcCenterAccountPanel"
+              data-account-menu-panel
+              hidden
+            >
+              <div class="account-menu__row">
+                <span>Customer ID</span>
+                <strong data-header-user-code>Linking…</strong>
+              </div>
+              <div class="account-menu__row">
+                <span>Balance</span>
+                <strong class="account-menu__balance">
+                  <span data-header-balance>—</span>
+                  <span data-header-currency></span>
+                </strong>
+              </div>
+              <p class="account-menu__balance-usd" data-header-balance-usd hidden></p>
+              <a class="button button--ghost button--wide" href="/pages/shipping-center">
+                Shipping Center
+              </a>
+              <button type="button" class="button button--ghost button--wide" data-compliance-open>
+                Account verification
+              </button>
+              <a class="button button--ghost button--wide account-menu__logout" href="{{ routes.account_logout_url }}">
+                Log out
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <a class="button button--primary" href="{{ sfc_shopify_login_url }}">Log in</a>
+        {% endif %}
+      </div>
+    </nav>
+  </header>
+
+  <div class="sfc-center-shell">
+    <nav class="sfc-center-nav" aria-label="Shipping Center">
+      <ul class="sfc-center-nav__list">
+        <li>
+          <a class="is-active" href="#overview" data-center-nav="overview">Overview</a>
+        </li>
+        <li>
+          <a href="#orders" data-center-nav="orders">My orders</a>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="sfc-center-main" id="SfcCenterMain">
+      <section
+        class="sfc-center-panel"
+        id="overview"
+        data-center-panel="overview"
+        aria-labelledby="sfc-center-stats-title"
+      >
+        <h2 class="sfc-center-panel__title" id="sfc-center-stats-title">Account overview</h2>
+        <p class="sfc-center-placeholder">
+          {% if customer %}
+            Review your shipment count below, or open My orders for the full list.
+          {% else %}
+            Sign in to see your account overview.
+            <a href="{{ sfc_shopify_login_url }}">Log in</a>
+          {% endif %}
+        </p>
+        <div class="sfc-center-stats">
+          <div class="sfc-center-stat">
+            <span class="sfc-center-stat__label">All orders</span>
+            <span class="sfc-center-stat__value is-loading" data-center-stat-orders>
+              <span class="sfc-center-stat__pulse" aria-hidden="true"></span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="sfc-center-panel"
+        id="orders"
+        data-center-panel="orders"
+        hidden
+        aria-labelledby="sfc-center-orders-title"
+      >
+        <div class="sfc-center-panel__head">
+          <h2 class="sfc-center-panel__title" id="sfc-center-orders-title">My orders</h2>
+          <div class="sfc-center-panel__actions">
+            <button type="button" class="button button--ghost" data-center-orders-refresh>Refresh</button>
+          </div>
+        </div>
+        <p class="sfc-center-orders-status" data-center-orders-status role="status">
+          {% if customer %}
+            Loading…
+          {% else %}
+            Sign in to view your orders.
+            <a href="{{ sfc_shopify_login_url }}">Log in</a>
+          {% endif %}
+        </p>
+        <div class="sfc-center-orders-empty" data-center-orders-empty hidden></div>
+        <div class="sfc-center-table-wrap" data-center-orders-table-wrap hidden>
+          <table class="sfc-center-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Route</th>
+                <th>Status</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody data-center-orders-tbody></tbody>
+          </table>
+        </div>
+        <div class="sfc-center-orders-footer" data-center-orders-footer hidden>
+          <button type="button" class="button button--ghost" data-center-orders-prev>
+            Previous
+          </button>
+          <span class="sfc-center-orders-page" data-center-orders-page></span>
+          <button type="button" class="button button--ghost" data-center-orders-next>
+            Next
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="order-detail-dialog" data-compliance-dialog>
+    <div class="order-detail-dialog__panel">
+      <button type="button" class="dialog-close" data-compliance-close aria-label="Close">×</button>
+      <p class="eyebrow">Required before shipping</p>
+      <h2>Account verification</h2>
+      <p class="order-detail-dialog__lede">
+        Upload document photos first, then fill your details. Orders unlock only when both are complete.
+        Personal: passport + holding-passport selfie. Enterprise: business license + legal rep ID.
+      </p>
+
+      <fieldset class="sfc-compliance-account">
+        <legend>Account type</legend>
+        <label class="sfc-center-problem-option">
+          <input type="radio" name="sfcComplianceAccountClass" value="1" data-compliance-account-class>
+          <span>
+            <strong>Personal</strong>
+            <small>Passport page + holding-passport selfie (one box each)</small>
+          </span>
+        </label>
+        <label class="sfc-center-problem-option">
+          <input type="radio" name="sfcComplianceAccountClass" value="2" data-compliance-account-class>
+          <span>
+            <strong>Enterprise</strong>
+            <small>Business license + legal representative ID</small>
+          </span>
+        </label>
+      </fieldset>
+
+      <p class="sfc-center-orders-status" data-compliance-status role="status" hidden></p>
+
+      <div class="sfc-compliance-slots" data-compliance-slots hidden>
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="license" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--license"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Business license</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Clear scan or photo of the company business license.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="passport" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--passport"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Passport</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Photo of the passport information page.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="holding" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--holding"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Holding passport</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Selfie holding your passport next to your face.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+
+        <div class="sfc-compliance-slot sfc-compliance-slot--card" data-compliance-slot="identity" hidden>
+          <div class="sfc-compliance-slot__visual" aria-hidden="true">
+            <span class="sfc-compliance-illus sfc-compliance-illus--id"></span>
+          </div>
+          <div class="sfc-compliance-slot__body">
+            <div class="sfc-compliance-slot__head">
+              <strong>Legal representative ID</strong>
+              <span data-compliance-slot-count>0 file(s)</span>
+            </div>
+            <p class="sfc-center-placeholder">Front and back recommended. Multiple images OK.</p>
+            <ul class="sfc-compliance-files" data-compliance-file-list></ul>
+            <label class="button button--ghost button--compact">
+              Choose file
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" data-compliance-file-input hidden>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="sfc-compliance-profile" data-compliance-profile hidden>
+        <p class="sfc-compliance-profile__hint">Fill in your details below. Upload document photos above too — both are required before placing orders.</p>
+        <div class="sfc-compliance-profile__grid">
+          <label class="sfc-compliance-field" data-compliance-field="company" hidden>
+            <span>Company name</span>
+            <input type="text" data-compliance-company autocomplete="organization" maxlength="255" placeholder="Registered company name">
+          </label>
+          <label class="sfc-compliance-field" data-compliance-field="trueName">
+            <span data-compliance-true-name-label>Full name</span>
+            <input type="text" data-compliance-true-name autocomplete="name" maxlength="255" placeholder="As on passport / ID">
+          </label>
+          <label class="sfc-compliance-field" data-compliance-field="creditId">
+            <span data-compliance-credit-id-label>Passport number</span>
+            <input type="text" data-compliance-credit-id maxlength="255" placeholder="Document number">
+          </label>
+          <label class="sfc-compliance-field" data-compliance-field="cardId" hidden>
+            <span>Legal representative ID number</span>
+            <input type="text" data-compliance-card-id maxlength="64" placeholder="Passport / national ID number">
+          </label>
+        </div>
+        <button type="button" class="button button--ghost button--compact" data-compliance-profile-save>
+          Save profile
+        </button>
+      </div>
+
+      <div class="order-detail-dialog__actions">
+        <button type="button" class="button button--ghost" data-compliance-close>Close</button>
+        <button type="button" class="button button--primary" data-compliance-refresh>Refresh status</button>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+{% schema %}
+{
+  "name": "SFC shipping center",
+  "target": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "api_base",
+      "label": "API base path",
+      "default": "/apps/sfc-tools",
+      "info": "Used for account menu balance / customer code. Never put API keys here."
+    }
+  ]
+}
+{% endschema %}

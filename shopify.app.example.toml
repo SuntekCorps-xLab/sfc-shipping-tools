@@ -1,0 +1,29 @@
+# Copy this file to shopify.app.toml and replace every example value.
+# Never commit an App secret or Admin API access token.
+
+client_id = "YOUR_SHOPIFY_APP_CLIENT_ID"
+name = "SFC Shipping Tools"
+application_url = "https://your-app.example.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = false
+
+[webhooks]
+api_version = "2026-07"
+
+[access_scopes]
+# Add only scopes that the server implementation demonstrably needs.
+scopes = ""
+optional_scopes = [ ]
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [
+  "https://your-app.example.com/auth/callback",
+]
+
+[app_proxy]
+url = "https://your-app.example.com/shopify/proxy"
+subpath = "sfc-tools"
+prefix = "apps"
