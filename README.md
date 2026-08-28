@@ -7,6 +7,7 @@
 Live rates · Account-bound tracking · Compliance review · Shipment creation · Label access
 
 [![CI](https://github.com/SuntekCorps-xLab/sfc-shipping-tools/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SuntekCorps-xLab/sfc-shipping-tools/actions/workflows/ci.yml)
+[![Sandbox](https://img.shields.io/badge/sandbox-try%20the%20demo%20store-95BF47?logo=shopify&logoColor=white)](https://sfc-shipping-dev-kt0sjr4c.myshopify.com)
 [![Node.js](https://img.shields.io/badge/Node.js-22.13%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Shopify](https://img.shields.io/badge/Shopify-Online%20Store%202.0-95BF47?logo=shopify&logoColor=white)](https://www.shopify.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -49,6 +50,7 @@ Live rates · Account-bound tracking · Compliance review · Shipment creation �
 
 ## 🧭 Contents
 
+- [🎮 Live sandbox](#-live-sandbox)
 - [✨ Capabilities](#-capabilities)
 - [🏗️ Architecture](#️-architecture)
 - [🔄 Customer workflow](#-customer-workflow)
@@ -61,6 +63,24 @@ Live rates · Account-bound tracking · Compliance review · Shipment creation �
 - [🔐 Security boundary](#-security-boundary)
 - [🌐 Open-source scope](#-open-source-scope)
 - [🤝 Contributing](#-contributing)
+
+## 🎮 Live sandbox
+
+A hosted Shopify development store is available so you can inspect the storefront tools before cloning the repo or wiring a Partner app. Open the URL, enter the password on Shopify's lock screen, then walk through the customer journey on a running theme.
+
+<table>
+<tr>
+<th align="left">🛍️ Store</th>
+<th align="left">🔑 Storefront password</th>
+</tr>
+<tr>
+<td nowrap><a href="https://sfc-shipping-dev-kt0sjr4c.myshopify.com">sfc-shipping-dev-kt0sjr4c.myshopify.com</a></td>
+<td><code>sfc123</code></td>
+</tr>
+</table>
+
+> [!NOTE]
+> Demonstration environment only — it may be reset. Do not enter real customer data, payment details, or production credentials. The GIFs below show the intended UI; the sandbox is the fastest way to click through the same flows. Local `npm run check` and a store you control are still required before any production install.
 
 ## ✨ Capabilities
 
@@ -146,6 +166,8 @@ shopify.theme.example.toml        Safe theme configuration template
 ```
 
 ## 🚀 Quick start
+
+Want a first look before local setup? Open the [live sandbox](#-live-sandbox) with storefront password `sfc123`.
 
 ### Prerequisites
 
