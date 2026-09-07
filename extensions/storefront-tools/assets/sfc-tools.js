@@ -915,16 +915,17 @@
     }
     function buildCard(rate, firstMile) {
       const international = Number(rate.amount);
-      const internationalAmount = Number.isFinite(international) ? international : 0;
+      const hasInternationalAmount = rate.amount !== null && rate.amount !== "" && Number.isFinite(international);
+      const internationalAmount = hasInternationalAmount ? international : null;
       const firstMileAmount = Number((firstMile == null ? void 0 : firstMile.amount) || 0);
       const internationalUsd = rate.amountUsd != null && Number.isFinite(Number(rate.amountUsd)) ? Number(rate.amountUsd) : null;
       const firstMileUsd = approxUsdFromRate(
         firstMileAmount,
-        internationalAmount,
+        internationalAmount != null ? internationalAmount : 0,
         internationalUsd
       );
-      const total = internationalAmount + firstMileAmount;
-      const totalUsd = internationalUsd == null ? null : Math.round((internationalUsd + Number(firstMileUsd || 0)) * 100) / 100;
+      const total = hasInternationalAmount ? internationalAmount + firstMileAmount : null;
+      const totalUsd = internationalUsd == null || total == null ? null : Math.round((internationalUsd + Number(firstMileUsd || 0)) * 100) / 100;
       const card = element("article", "rate-card");
       const row = element("div", "rate-card__row");
       const service = element("div", "rate-card__service");
@@ -942,14 +943,18 @@
       const totalLine = element("div", "rate-card__line rate-card__line--total");
       totalLine.append(
         element("span", "", "Total"),
-        element("strong", "", `${total.toFixed(2)} ${rate.currency || "RMB"}`)
+        element(
+          "strong",
+          "",
+          total == null ? "Price unavailable" : `${total.toFixed(2)} ${rate.currency || "RMB"}`
+        )
       );
       breakdown.append(
         totalLine,
         element(
           "div",
           "rate-card__subtotal",
-          (firstMile == null ? void 0 : firstMile.mode) === "dropoff" ? `International ${internationalAmount.toFixed(2)} + drop-off first mile 0` : `International ${internationalAmount.toFixed(2)} + first mile ${firstMileAmount.toFixed(2)}`
+          total == null ? "SFC did not provide a valid price for this service" : (firstMile == null ? void 0 : firstMile.mode) === "dropoff" ? `International ${internationalAmount.toFixed(2)} + drop-off first mile 0` : `International ${internationalAmount.toFixed(2)} + first mile ${firstMileAmount.toFixed(2)}`
         )
       );
       if (totalUsd != null) {
@@ -962,15 +967,16 @@
         action: "start-order",
         serviceCode: String(rate.serviceCode || ""),
         serviceName: String(rate.serviceName || rate.serviceCode || "SFC service"),
-        amount: internationalAmount.toFixed(2),
+        amount: internationalAmount == null ? "" : internationalAmount.toFixed(2),
         currency: String(rate.currency || "RMB"),
-        totalAmount: total.toFixed(2),
+        totalAmount: total == null ? "" : total.toFixed(2),
         firstMileAmount: firstMileAmount.toFixed(2),
         firstMileMode: String((firstMile == null ? void 0 : firstMile.mode) || "dropoff")
       });
       if (internationalUsd != null) orderButton.dataset.amountUsd = internationalUsd.toFixed(2);
       if (totalUsd != null) orderButton.dataset.totalAmountUsd = totalUsd.toFixed(2);
-      aside.append(breakdown, orderButton);
+      aside.append(breakdown);
+      if (total != null) aside.append(orderButton);
       row.append(service, aside);
       card.append(row);
       return card;
@@ -3603,7 +3609,11 @@
         if (requestGeneration !== rateRequestGeneration) return;
         if (response.ok) {
           lastParcel = input;
-          renderRates(response);
+          if (Array.isArray(response.rates) && response.rates.length > 0) {
+            renderRates(response);
+          } else {
+            renderRateState("No shipping services found", "Try another destination or parcel size.");
+          }
           return;
         }
         renderRateState(
@@ -3702,9 +3712,9 @@
     });
     for (const link of root.querySelectorAll("[data-sfc-registration]")) {
       link.addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("sfc:registration-click", {
-          detail: { source: "storefront_sfc_tools" }
-        }));
+        trackEvent("registration_click", {
+          payload: { source: "storefront_sfc_tools" }
+        });
       });
     }
     const backTopBtn = root.querySelector("[data-sfc-back-top]");

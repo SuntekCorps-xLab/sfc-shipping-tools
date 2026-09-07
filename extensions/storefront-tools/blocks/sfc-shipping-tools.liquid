@@ -143,6 +143,7 @@
             </div>
           </div>
         {% else %}
+          <a class="button button--ghost" href="{{ register_url | escape }}" data-sfc-registration>Register</a>
           <a class="button button--primary" href="{{ sfc_shopify_login_url }}">Log in</a>
         {% endif %}
       </div>
@@ -184,6 +185,7 @@
             <a class="button button--primary" href="#SfcRates">Check live rates</a>
             {% if customer %}
             {% else %}
+              <a class="button button--ghost" href="{{ register_url | escape }}" data-sfc-registration>Create an SFC account</a>
               <a class="button button--ghost" href="{{ sfc_shopify_login_url }}">Sign in to ship</a>
             {% endif %}
           </div>

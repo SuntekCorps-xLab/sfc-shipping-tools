@@ -173,6 +173,7 @@ Want a first look before local setup? Open the [live sandbox](#-live-sandbox) wi
 
 - Node.js `22.13` or newer
 - npm
+- On Windows, verify `node --version` in a new `cmd.exe` window before running `npm ci`; Node.js must be available on the system `PATH`, not only in a PowerShell session.
 - Shopify CLI
 - Shopify Partner / Dev Dashboard app
 - Shopify development store
@@ -183,14 +184,15 @@ Want a first look before local setup? Open the [live sandbox](#-live-sandbox) wi
 
 ```bash
 npm ci
+npx playwright install chromium
 npm run check
 ```
 
-Install the Chromium runtime once per development machine:
+Install the Chromium runtime before running the full verification command because
+`npm run check` includes browser-level Playwright tests. The command installs
+Chromium once per development machine.
 
-```bash
-npx playwright install chromium
-```
+With npm 11 or newer, `npm ci` may print `allowScripts` warnings for packages that need install or postinstall scripts, including Prisma and esbuild. Review the package names and approve the required scripts with npm's displayed `npm approve-scripts` command when prompted; do not approve unrelated packages.
 
 `npm run check` runs linting, TypeScript checks, unit tests, storefront bundling, the Shopify app build, and browser-level storefront tests.
 

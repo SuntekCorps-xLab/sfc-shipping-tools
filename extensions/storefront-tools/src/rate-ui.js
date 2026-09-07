@@ -100,7 +100,9 @@ export function createRateUi({root, results, getParcel, onStartOrder}) {
 
   function buildCard(rate, firstMile) {
     const international = Number(rate.amount);
-    const internationalAmount = Number.isFinite(international) ? international : 0;
+    const hasInternationalAmount =
+      rate.amount !== null && rate.amount !== '' && Number.isFinite(international);
+    const internationalAmount = hasInternationalAmount ? international : null;
     const firstMileAmount = Number(firstMile?.amount || 0);
     const internationalUsd =
       rate.amountUsd != null && Number.isFinite(Number(rate.amountUsd))
@@ -108,12 +110,12 @@ export function createRateUi({root, results, getParcel, onStartOrder}) {
         : null;
     const firstMileUsd = approxUsdFromRate(
       firstMileAmount,
-      internationalAmount,
+      internationalAmount ?? 0,
       internationalUsd,
     );
-    const total = internationalAmount + firstMileAmount;
+    const total = hasInternationalAmount ? internationalAmount + firstMileAmount : null;
     const totalUsd =
-      internationalUsd == null
+      internationalUsd == null || total == null
         ? null
         : Math.round((internationalUsd + Number(firstMileUsd || 0)) * 100) / 100;
 
@@ -135,16 +137,22 @@ export function createRateUi({root, results, getParcel, onStartOrder}) {
     const totalLine = element('div', 'rate-card__line rate-card__line--total');
     totalLine.append(
       element('span', '', 'Total'),
-      element('strong', '', `${total.toFixed(2)} ${rate.currency || 'RMB'}`),
+      element(
+        'strong',
+        '',
+        total == null ? 'Price unavailable' : `${total.toFixed(2)} ${rate.currency || 'RMB'}`,
+      ),
     );
     breakdown.append(
       totalLine,
       element(
         'div',
         'rate-card__subtotal',
-        firstMile?.mode === 'dropoff'
-          ? `International ${internationalAmount.toFixed(2)} + drop-off first mile 0`
-          : `International ${internationalAmount.toFixed(2)} + first mile ${firstMileAmount.toFixed(2)}`,
+        total == null
+          ? 'SFC did not provide a valid price for this service'
+          : firstMile?.mode === 'dropoff'
+            ? `International ${internationalAmount.toFixed(2)} + drop-off first mile 0`
+            : `International ${internationalAmount.toFixed(2)} + first mile ${firstMileAmount.toFixed(2)}`,
       ),
     );
     if (totalUsd != null) {
@@ -159,15 +167,16 @@ export function createRateUi({root, results, getParcel, onStartOrder}) {
       action: 'start-order',
       serviceCode: String(rate.serviceCode || ''),
       serviceName: String(rate.serviceName || rate.serviceCode || 'SFC service'),
-      amount: internationalAmount.toFixed(2),
+      amount: internationalAmount == null ? '' : internationalAmount.toFixed(2),
       currency: String(rate.currency || 'RMB'),
-      totalAmount: total.toFixed(2),
+      totalAmount: total == null ? '' : total.toFixed(2),
       firstMileAmount: firstMileAmount.toFixed(2),
       firstMileMode: String(firstMile?.mode || 'dropoff'),
     });
     if (internationalUsd != null) orderButton.dataset.amountUsd = internationalUsd.toFixed(2);
     if (totalUsd != null) orderButton.dataset.totalAmountUsd = totalUsd.toFixed(2);
-    aside.append(breakdown, orderButton);
+    aside.append(breakdown);
+    if (total != null) aside.append(orderButton);
     row.append(service, aside);
     card.append(row);
     return card;

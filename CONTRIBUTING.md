@@ -8,7 +8,7 @@ Thank you for improving SFC Shipping Tools.
 2. Copy `.env.example` to `.env` and use development-only values.
 3. Copy `shopify.app.example.toml` and `shopify.theme.example.toml` only when
    Shopify CLI development is required.
-4. Install with `npm ci` and run `npx playwright install chromium` once.
+4. Install with `npm ci`, then run `npx playwright install chromium` once before the full check.
 5. Run `npm run check` before opening a pull request.
 
 Never commit an SFC credential, Shopify App secret, Admin API token, customer

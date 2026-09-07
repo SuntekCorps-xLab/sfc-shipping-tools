@@ -16,7 +16,7 @@ const rateResponse = {
   ],
 };
 
-async function serveStorefront(page, {compliance = null, onTracking = null} = {}) {
+async function serveStorefront(page, {compliance = null, onTracking = null, rates = rateResponse} = {}) {
   await page.route('http://sfc.test/**', async (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path === '/tests/fixtures/storefront.html') {
@@ -29,7 +29,7 @@ async function serveStorefront(page, {compliance = null, onTracking = null} = {}
     }
 
     let body = {ok: false, code: 'NOT_IMPLEMENTED'};
-    if (path.endsWith('/rates')) body = rateResponse;
+    if (path.endsWith('/rates')) body = rates;
     if (path.endsWith('/account-link')) body = {ok: true};
     if (path.endsWith('/balance')) body = {ok: true, balance: 100, currency: 'RMB'};
     if (path.endsWith('/compliance') && compliance) body = compliance;
@@ -49,6 +49,20 @@ test('renders live rates sorted by price without browser errors', async ({page})
   await expect(page.locator('.rate-card__code').first()).toHaveText('SFC-SAVER');
   await expect(page.locator('.rate-card__cta')).toHaveCount(2);
   expect(pageErrors).toEqual([]);
+});
+
+test('does not offer ordering for a rate with an unavailable amount', async ({page}) => {
+  await serveStorefront(page, {
+    rates: {
+      ok: true,
+      rates: [{serviceCode: 'SFC-UNKNOWN', serviceName: 'SFC service', amount: null, currency: 'RMB'}],
+    },
+  });
+  await page.goto('/tests/fixtures/storefront.html?loggedIn=1');
+  await page.locator('#quote').click();
+
+  await expect(page.locator('.rate-card__line--total strong')).toHaveText('Price unavailable');
+  await expect(page.locator('.rate-card__cta')).toHaveCount(0);
 });
 
 test('rejects an invalid tracking number before calling the gateway', async ({page}) => {

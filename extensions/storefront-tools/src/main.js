@@ -2876,7 +2876,11 @@ function initSfcTools(root) {
       if (requestGeneration !== rateRequestGeneration) return;
       if (response.ok) {
         lastParcel = input;
-        renderRates(response);
+        if (Array.isArray(response.rates) && response.rates.length > 0) {
+          renderRates(response);
+        } else {
+          renderRateState('No shipping services found', 'Try another destination or parcel size.');
+        }
         return;
       }
       renderRateState(
@@ -2994,9 +2998,9 @@ function initSfcTools(root) {
 
   for (const link of root.querySelectorAll('[data-sfc-registration]')) {
     link.addEventListener('click', () => {
-      window.dispatchEvent(new CustomEvent('sfc:registration-click', {
-        detail: {source: 'storefront_sfc_tools'},
-      }));
+      trackEvent('registration_click', {
+        payload: {source: 'storefront_sfc_tools'},
+      });
     });
   }
 
