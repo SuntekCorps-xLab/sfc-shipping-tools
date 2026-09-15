@@ -153,7 +153,7 @@ app/                              Shopify app shell and server routes
 extensions/storefront-tools/
   blocks/                         Liquid storefront block
   src/                            Framework-free browser modules
-  styles/                         Source styles, including terminal-theme.css
+  styles/                         Source styles, concatenated into assets/sfc-tools.css
   assets/                         Generated extension assets
 docs/                             Public implementation guidance
 examples/                         Non-secret examples
