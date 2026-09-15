@@ -31,7 +31,7 @@ import {
   cargoDecisionAllowsOrder,
 } from './compliance.js';
 import {
-  WAREHOUSE_COPY_TEXT,
+  warehouseCopyText,
   validateRateInput,
   normalizeChinaMobile,
   isValidTrackingNumber,
@@ -113,8 +113,16 @@ function initSfcTools(root) {
       goToShopifyLogin();
       return;
     }
+    const card = button?.closest?.(
+      '[data-warehouse-card], [data-order-warehouse-card]',
+    );
+    const text = warehouseCopyText({
+      address: card?.querySelector('[data-warehouse-address]')?.textContent?.trim() ?? '',
+      contact: card?.querySelector('[data-warehouse-contact]')?.textContent?.trim() ?? '',
+      phone: card?.querySelector('[data-warehouse-phone]')?.textContent?.trim() ?? '',
+    });
     try {
-      await navigator.clipboard.writeText(WAREHOUSE_COPY_TEXT);
+      await navigator.clipboard.writeText(text);
       if (button) {
         const prev = button.textContent;
         button.textContent = 'Copied';
@@ -123,7 +131,7 @@ function initSfcTools(root) {
         }, 1600);
       }
     } catch {
-      window.prompt('Copy warehouse address:', WAREHOUSE_COPY_TEXT);
+      window.prompt('Copy warehouse address:', text);
     }
   }
 

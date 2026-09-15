@@ -427,13 +427,22 @@
             <div class="warehouse-card warehouse-card--order" data-order-warehouse-card hidden>
               <div class="warehouse-card__head">
                 <span class="step-label">DROP OFF AT THIS WAREHOUSE</span>
-                <button type="button" class="button button--ghost button--compact" data-copy-warehouse>Copy address</button>
+                <button type="button" class="button button--ghost button--compact" data-copy-warehouse {% unless customer %}hidden{% endunless %}>Copy address</button>
               </div>
-              <p class="warehouse-card__line">广东省惠州市惠阳区白石村明泰路17号朝鲲产业园,三态速递一楼</p>
-              <p class="warehouse-card__meta">
-                <span>收件人：<strong>刘正+Y5169</strong></span>
-                <span>电话：<strong>18938091512</strong></span>
-              </p>
+              {% if customer %}
+                <p class="warehouse-card__line" data-warehouse-address>广东省惠州市惠阳区白石村明泰路17号朝鲲产业园,三态速递一楼</p>
+                <p class="warehouse-card__meta">
+                  <span>收件人：<strong data-warehouse-contact>刘正+Y5169</strong></span>
+                  <span>电话：<strong data-warehouse-phone>18938091512</strong></span>
+                </p>
+              {% else %}
+                <p class="warehouse-card__line" data-warehouse-address>广东省惠州市**************</p>
+                <p class="warehouse-card__meta">
+                  <span>收件人：<strong data-warehouse-contact>******</strong></span>
+                  <span>电话：<strong data-warehouse-phone>***********</strong></span>
+                </p>
+                <p class="warehouse-card__note">Sign in to view the full warehouse address and copy it.</p>
+              {% endif %}
             </div>
             <div class="order-pickup-block" data-order-pickup-block hidden>
               <div class="form-divider">

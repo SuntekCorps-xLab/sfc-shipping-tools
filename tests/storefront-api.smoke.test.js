@@ -20,6 +20,7 @@ import {
   escapeHtml,
   estimateFirstMileRmb,
   renderSfcTracking,
+  warehouseCopyText,
 } from '../extensions/storefront-tools/src/rates.js';
 import {
   REVIEW_STATUS,
@@ -260,5 +261,48 @@ describe('rates helpers', () => {
       events: [],
     });
     expect(html).not.toContain('checks remaining');
+  });
+});
+
+describe('warehouse contact privacy guard', () => {
+  it('builds clipboard text from server-rendered card fields', () => {
+    expect(
+      warehouseCopyText({
+        address: 'Warehouse street address',
+        contact: 'Receiver',
+        phone: '13800000000',
+      }),
+    ).toBe('Warehouse street address\n收件人：Receiver\n电话：13800000000');
+  });
+
+  it('omits empty fields instead of emitting blank lines', () => {
+    expect(warehouseCopyText({})).toBe('');
+    expect(warehouseCopyText({address: 'Warehouse street address'})).toBe(
+      'Warehouse street address',
+    );
+  });
+
+  it('keeps the warehouse contact constant out of the client source', () => {
+    const source = readFileSync(
+      new URL('../extensions/storefront-tools/src/rates.js', import.meta.url),
+      'utf8',
+    );
+    expect(source).not.toContain('WAREHOUSE_COPY_TEXT');
+  });
+
+  it('keeps the order-panel warehouse card behind a customer branch', () => {
+    const liquid = readFileSync(
+      new URL(
+        '../extensions/storefront-tools/blocks/sfc-shipping-tools.liquid',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    const orderCard = liquid.match(
+      /data-order-warehouse-card[\s\S]*?{% endif %}/,
+    )?.[0];
+    expect(orderCard).toBeTruthy();
+    expect(orderCard).toContain('{% if customer %}');
+    expect(orderCard).toContain('{% else %}');
   });
 });

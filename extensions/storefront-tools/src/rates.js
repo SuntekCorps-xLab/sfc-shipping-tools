@@ -67,8 +67,18 @@ export function firstMileZoneForProvince(province) {
   return FIRST_MILE_ZONE_RATES[band];
 }
 
-export const WAREHOUSE_COPY_TEXT =
-  '广东省惠州市惠阳区白石村明泰路17号朝鲲产业园,三态速递一楼\n收件人：刘正+Y5169\n电话：18938091512';
+/**
+ * Build the clipboard text for the warehouse drop-off address from the
+ * server-rendered (and, for anonymous visitors, masked) card fields.
+ * Warehouse contact details must not live in the client bundle.
+ */
+export function warehouseCopyText({address, contact, phone} = {}) {
+  const lines = [];
+  if (address) lines.push(String(address));
+  if (contact) lines.push(`收件人：${contact}`);
+  if (phone) lines.push(`电话：${phone}`);
+  return lines.join('\n');
+}
 
 export function chargeableWeightKg(weight, length, width, height) {
   const actual = Number(weight) || 0;

@@ -384,7 +384,13 @@
     if (!band) return null;
     return FIRST_MILE_ZONE_RATES[band];
   }
-  var WAREHOUSE_COPY_TEXT = "\u5E7F\u4E1C\u7701\u60E0\u5DDE\u5E02\u60E0\u9633\u533A\u767D\u77F3\u6751\u660E\u6CF0\u8DEF17\u53F7\u671D\u9CB2\u4EA7\u4E1A\u56ED,\u4E09\u6001\u901F\u9012\u4E00\u697C\n\u6536\u4EF6\u4EBA\uFF1A\u5218\u6B63+Y5169\n\u7535\u8BDD\uFF1A18938091512";
+  function warehouseCopyText({ address, contact, phone } = {}) {
+    const lines = [];
+    if (address) lines.push(String(address));
+    if (contact) lines.push(`\u6536\u4EF6\u4EBA\uFF1A${contact}`);
+    if (phone) lines.push(`\u7535\u8BDD\uFF1A${phone}`);
+    return lines.join("\n");
+  }
   function chargeableWeightKg(weight, length, width, height) {
     const actual = Number(weight) || 0;
     const volumetric = (Number(length) || 0) * (Number(width) || 0) * (Number(height) || 0) / 6e3;
@@ -1189,12 +1195,22 @@
       });
     }
     async function copyWarehouseAddress(button) {
+      var _a2, _b2, _c2, _d2, _e2, _f2, _g, _h, _i, _j;
       if (root.dataset.customerLoggedIn !== "true") {
         goToShopifyLogin();
         return;
       }
+      const card = (_a2 = button == null ? void 0 : button.closest) == null ? void 0 : _a2.call(
+        button,
+        "[data-warehouse-card], [data-order-warehouse-card]"
+      );
+      const text = warehouseCopyText({
+        address: (_d2 = (_c2 = (_b2 = card == null ? void 0 : card.querySelector("[data-warehouse-address]")) == null ? void 0 : _b2.textContent) == null ? void 0 : _c2.trim()) != null ? _d2 : "",
+        contact: (_g = (_f2 = (_e2 = card == null ? void 0 : card.querySelector("[data-warehouse-contact]")) == null ? void 0 : _e2.textContent) == null ? void 0 : _f2.trim()) != null ? _g : "",
+        phone: (_j = (_i = (_h = card == null ? void 0 : card.querySelector("[data-warehouse-phone]")) == null ? void 0 : _h.textContent) == null ? void 0 : _i.trim()) != null ? _j : ""
+      });
       try {
-        await navigator.clipboard.writeText(WAREHOUSE_COPY_TEXT);
+        await navigator.clipboard.writeText(text);
         if (button) {
           const prev = button.textContent;
           button.textContent = "Copied";
@@ -1203,7 +1219,7 @@
           }, 1600);
         }
       } catch (e) {
-        window.prompt("Copy warehouse address:", WAREHOUSE_COPY_TEXT);
+        window.prompt("Copy warehouse address:", text);
       }
     }
     rateForm == null ? void 0 : rateForm.addEventListener("change", (event) => {
