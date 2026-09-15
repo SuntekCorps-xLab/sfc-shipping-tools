@@ -74,7 +74,7 @@ body:has(.sfc-shipping-center) #MainContent.content-for-layout {
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--signal);
+  background: var(--signal-cta);
   color: var(--white);
   font-size: 11px;
   line-height: 18px;

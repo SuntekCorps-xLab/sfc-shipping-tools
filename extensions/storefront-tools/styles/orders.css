@@ -557,7 +557,7 @@
   min-width: 128px;
   padding: 0 18px;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border: 0;
   border-radius: 7px;
   cursor: pointer;
@@ -613,7 +613,7 @@
   letter-spacing: 0.12em;
 }
 .sfc-standalone .tracking-provider strong {
-  color: var(--signal);
+  color: var(--signal-cta);
   font-family: var(--display);
   font-size: 22px;
 }

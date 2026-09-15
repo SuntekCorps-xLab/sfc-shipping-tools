@@ -21,7 +21,8 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
 /* SFC storefront tools — design tokens and base */
 .sfc-standalone {
   --signal: #ff6b16;
-  --signal-dark: #df4f00;
+  --signal-cta: #c2410c;
+  --signal-dark: #9a3412;
   --signal-soft: #fff1e8;
   --ink: #16292f;
   --ink-soft: #2f4349;
@@ -262,7 +263,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
 }
 .sfc-standalone .button--primary {
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   box-shadow: 0 10px 24px rgba(255, 107, 22, 0.2);
 }
 .sfc-standalone .button--primary:hover {
@@ -1060,7 +1061,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   text-wrap: balance;
 }
 .sfc-standalone .hero__line--signal {
-  color: var(--signal);
+  color: var(--signal-cta);
 }
 .sfc-standalone .hero__line--ink {
   color: var(--ink);
@@ -1378,7 +1379,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   gap: 16px;
   padding: 24px;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border-right: 1px solid rgba(255, 255, 255, 0.42);
 }
 .sfc-standalone .capabilities article:first-child {
@@ -1408,7 +1409,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
 }
 .sfc-standalone .capabilities small {
   margin-top: 4px;
-  color: rgba(255, 255, 255, 0.76);
+  color: var(--white);
   font-size: 10px;
 }
 .sfc-standalone .tool-section {
@@ -3320,7 +3321,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   min-width: 128px;
   padding: 0 18px;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border: 0;
   border-radius: 7px;
   cursor: pointer;
@@ -3376,7 +3377,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   letter-spacing: 0.12em;
 }
 .sfc-standalone .tracking-provider strong {
-  color: var(--signal);
+  color: var(--signal-cta);
   font-family: var(--display);
   font-size: 22px;
 }
@@ -3424,7 +3425,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   display: grid;
   place-items: center;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border-radius: 50%;
   font-family: var(--display);
   font-weight: 900;
@@ -3462,7 +3463,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   display: grid;
   place-items: center;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border-radius: 50%;
   font-family: var(--display);
   font-size: 14px;
@@ -3474,7 +3475,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   background: var(--line);
 }
 .sfc-standalone .tracking-placeholder__route b {
-  color: var(--signal);
+  color: var(--signal-cta);
   letter-spacing: 0.2em;
 }
 .sfc-standalone .tracking-placeholder h3 {
@@ -3624,7 +3625,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   border-right: 0;
 }
 .sfc-standalone .process-grid article > span {
-  color: var(--signal);
+  color: var(--signal-cta);
   font-family: var(--display);
   font-size: 13px;
   font-weight: 900;
@@ -3648,7 +3649,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
 }
 .sfc-standalone .closing-cta {
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
 }
 .sfc-standalone .closing-cta__inner {
   min-height: 224px;
@@ -3660,7 +3661,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   padding-bottom: 44px;
 }
 .sfc-standalone .closing-cta .eyebrow {
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--white);
 }
 .sfc-standalone .closing-cta h2 {
   max-width: 760px;
@@ -3714,7 +3715,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   border: none;
   border-radius: 999px;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   box-shadow: 0 12px 32px rgba(255, 107, 22, 0.38);
   cursor: pointer;
   opacity: 0;
@@ -4552,7 +4553,7 @@ body:has(.sfc-shipping-center) #MainContent.content-for-layout {
   height: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--signal);
+  background: var(--signal-cta);
   color: var(--white);
   font-size: 11px;
   line-height: 18px;

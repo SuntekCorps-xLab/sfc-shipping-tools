@@ -15,7 +15,8 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
 /* SFC storefront tools — design tokens and base */
 .sfc-standalone {
   --signal: #ff6b16;
-  --signal-dark: #df4f00;
+  --signal-cta: #c2410c;
+  --signal-dark: #9a3412;
   --signal-soft: #fff1e8;
   --ink: #16292f;
   --ink-soft: #2f4349;

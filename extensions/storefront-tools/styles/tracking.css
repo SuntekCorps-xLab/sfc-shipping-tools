@@ -40,7 +40,7 @@
   display: grid;
   place-items: center;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border-radius: 50%;
   font-family: var(--display);
   font-weight: 900;
@@ -78,7 +78,7 @@
   display: grid;
   place-items: center;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border-radius: 50%;
   font-family: var(--display);
   font-size: 14px;
@@ -90,7 +90,7 @@
   background: var(--line);
 }
 .sfc-standalone .tracking-placeholder__route b {
-  color: var(--signal);
+  color: var(--signal-cta);
   letter-spacing: 0.2em;
 }
 .sfc-standalone .tracking-placeholder h3 {
@@ -240,7 +240,7 @@
   border-right: 0;
 }
 .sfc-standalone .process-grid article > span {
-  color: var(--signal);
+  color: var(--signal-cta);
   font-family: var(--display);
   font-size: 13px;
   font-weight: 900;
@@ -264,7 +264,7 @@
 }
 .sfc-standalone .closing-cta {
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
 }
 .sfc-standalone .closing-cta__inner {
   min-height: 224px;
@@ -276,7 +276,7 @@
   padding-bottom: 44px;
 }
 .sfc-standalone .closing-cta .eyebrow {
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--white);
 }
 .sfc-standalone .closing-cta h2 {
   max-width: 760px;
@@ -330,7 +330,7 @@
   border: none;
   border-radius: 999px;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   box-shadow: 0 12px 32px rgba(255, 107, 22, 0.38);
   cursor: pointer;
   opacity: 0;

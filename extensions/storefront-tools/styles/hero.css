@@ -59,7 +59,7 @@
   text-wrap: balance;
 }
 .sfc-standalone .hero__line--signal {
-  color: var(--signal);
+  color: var(--signal-cta);
 }
 .sfc-standalone .hero__line--ink {
   color: var(--ink);
@@ -377,7 +377,7 @@
   gap: 16px;
   padding: 24px;
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   border-right: 1px solid rgba(255, 255, 255, 0.42);
 }
 .sfc-standalone .capabilities article:first-child {
@@ -407,7 +407,7 @@
 }
 .sfc-standalone .capabilities small {
   margin-top: 4px;
-  color: rgba(255, 255, 255, 0.76);
+  color: var(--white);
   font-size: 10px;
 }
 .sfc-standalone .tool-section {

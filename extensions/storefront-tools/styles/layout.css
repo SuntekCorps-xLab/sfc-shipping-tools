@@ -140,7 +140,7 @@
 }
 .sfc-standalone .button--primary {
   color: var(--white);
-  background: var(--signal);
+  background: var(--signal-cta);
   box-shadow: 0 10px 24px rgba(255, 107, 22, 0.2);
 }
 .sfc-standalone .button--primary:hover {
