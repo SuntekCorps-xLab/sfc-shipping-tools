@@ -23,7 +23,11 @@ redirect_urls = [
   "https://your-app.example.com/auth/callback",
 ]
 
+# App Proxy: Shopify forwards storefront requests from
+# https://<shop>/apps/sfc-tools/* to this URL. It MUST point at the separately
+# implemented backend that fulfils docs/API_CONTRACT.md, NOT this app shell
+# (which serves no proxy routes). Use a host you control for that backend.
 [app_proxy]
-url = "https://your-app.example.com/shopify/proxy"
+url = "https://your-backend.example.com/shopify/proxy"
 subpath = "sfc-tools"
 prefix = "apps"
