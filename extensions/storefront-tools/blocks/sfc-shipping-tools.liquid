@@ -5,7 +5,6 @@
 <script src="{{ 'sfc-tools.js' | asset_url }}" defer></script>
 
 {% assign register_url = block.settings.register_url | default: 'https://ffment.sendfromchina.com/register?from=english' %}
-{% assign login_url = block.settings.login_url | default: 'https://www.sendfromchina.com/login' %}
 {% assign seo_title = block.settings.seo_title | default: 'Ship from China with SFC | Live Rates, Tracking & Balance' %}
 {% assign seo_description = block.settings.seo_description | default: 'Compare SFC shipping rates from China, sign in with Shopify, top up your SFC balance, place shipments, and track packages in one place.' %}
 {%- assign sfc_return_to = request.path | default: '/' -%}
@@ -1046,12 +1045,6 @@
       "id": "register_url",
       "label": "SFC registration URL",
       "default": "https://ffment.sendfromchina.com/register?from=english"
-    },
-    {
-      "type": "text",
-      "id": "login_url",
-      "label": "SFC login URL",
-      "default": "https://www.sendfromchina.com/login"
     },
     {
       "type": "text",

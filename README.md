@@ -243,7 +243,7 @@ The `storefront-tools` extension ships **two** blocks that work together:
 5. Keep the block API base path as `/apps/sfc-tools` unless your proxy uses another path.
 6. Test with a development customer before enabling the blocks in a live theme.
 
-The registration and login URLs in the block schema are editable presentation links. They are not API credentials.
+The registration URL in the block schema is an editable presentation link. It is not an API credential. Storefront sign-in always uses the Shopify customer login, so there is no separate SFC login URL setting.
 
 ## 🔌 API surface
 
