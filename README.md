@@ -243,11 +243,13 @@ The storefront client calls these App Proxy routes:
 | `POST` | `/compliance-account-class` | 🛡️ Compliance | Select personal or enterprise flow |
 | `POST` | `/compliance-profile` | 🛡️ Compliance | Save verification profile |
 | `POST` | `/compliance-upload` | 📎 Compliance | Upload verification documents |
+| `GET` | `/compliance-file` | 🛡️ Compliance | Retrieve an uploaded verification document |
 | `POST` | `/compliance-submit` | 🔍 Compliance | Submit a profile for review |
 | `POST` | `/cargo-compliance` | 📦 Cargo policy | Evaluate shipment cargo declarations |
 | `POST` | `/create-order` | ✅ Order workspace | Create an SFC shipment |
 | `POST` | `/domestic-tracking` | 🚚 Tracking | Bind China domestic tracking |
 | `POST` | `/label` | 🏷️ Labels | Request a shipment label |
+| `POST` | `/event` | 📊 Analytics | Optional event tracking (off by default) |
 
 See [docs/API_CONTRACT.md](docs/API_CONTRACT.md) for request, response, identity, and fail-closed requirements.
 

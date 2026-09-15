@@ -37,11 +37,13 @@ Use generic public errors. Keep upstream payloads, stack traces, credentials, do
 | `POST /compliance-account-class` | Required | Set personal or enterprise profile type |
 | `POST /compliance-profile` | Required | Save verification profile fields |
 | `POST /compliance-upload` | Required | Upload a private verification document |
+| `GET /compliance-file` | Required + ownership-checked | Retrieve an uploaded verification document |
 | `POST /compliance-submit` | Required | Submit a complete profile for review |
 | `POST /cargo-compliance` | Required | Evaluate one shipment declaration |
 | `POST /create-order` | Required | Create an order after repeating every gate |
 | `POST /domestic-tracking` | Required | Bind a domestic tracking number to an owned order |
 | `POST /label` | Required | Return a label for an owned order |
+| `POST /event` | Optional | Best-effort storefront analytics; ignored when disabled |
 
 ## Account review
 
@@ -115,6 +117,12 @@ At minimum, keep the following stable for clients:
 ## File handling
 
 The browser allows JPG, PNG, and PDF up to 10 MB for usability. The server must independently enforce size, validate magic bytes rather than extensions alone, scan for malware, randomize stored names, keep files private, check ownership on retrieval, encrypt at rest, log access, and apply a retention/deletion policy.
+
+`GET /compliance-file?file=<handle>` is the retrieval entry point the storefront uses to preview an uploaded document (rendered as an `<a href>` / `<img src>`). The `file` value must be an opaque, server-issued handle, never a storage path or client-controlled filename; treat any path-like or traversal value as invalid. On every request the server must verify the App Proxy signature, resolve the current signed-in customer, and confirm that customer owns the referenced document before returning bytes. A missing, unknown, or not-owned handle must fail closed with a generic error and no document content.
+
+## Analytics
+
+`POST /event` is an optional, best-effort analytics sink. The storefront only calls it when analytics is explicitly enabled (`data-analytics="on"` on the root node or `SFC_ANALYTICS`); it is off by default, and client-side failures are silently ignored. It is not part of any authorization, account-review, or cargo-screening decision, and the backend must never treat an `/event` payload as trusted input.
 
 ## Order creation invariants
 
