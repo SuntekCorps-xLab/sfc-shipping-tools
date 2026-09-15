@@ -62,6 +62,23 @@ export function getTrafficSource() {
 }
 
 /**
+ * Whether storefront analytics is enabled. Off by default for open-source /
+ * privacy. Enable with data-analytics="on" on the root node, or
+ * globalThis.SFC_ANALYTICS = true. Callers must check this before persisting any
+ * identifier, so nothing is written to storage when analytics is off.
+ */
+export function isAnalyticsEnabled(enabled = null) {
+  return (
+    enabled === true ||
+    globalThis.SFC_ANALYTICS === true ||
+    (typeof document !== 'undefined' &&
+      Boolean(
+        document.querySelector('[data-sfc-tools-root][data-analytics="on"]'),
+      ))
+  );
+}
+
+/**
  * Optional analytics. Off by default for open-source / privacy.
  * Enable with data-analytics="on" on the root node, or globalThis.SFC_ANALYTICS = true.
  */
@@ -77,12 +94,7 @@ export function trackStorefrontEvent(
     enabled = null,
   } = {},
 ) {
-  const on =
-    enabled === true ||
-    globalThis.SFC_ANALYTICS === true ||
-    (typeof document !== 'undefined' &&
-      document.querySelector('[data-sfc-tools-root][data-analytics="on"]'));
-  if (!on) return Promise.resolve(null);
+  if (!isAnalyticsEnabled(enabled)) return Promise.resolve(null);
 
   const {anonymousId, sessionId} = getAnalyticsIds();
   const body = {

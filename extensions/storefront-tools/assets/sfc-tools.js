@@ -1119,6 +1119,11 @@
     }
     return "";
   }
+  function isAnalyticsEnabled(enabled = null) {
+    return enabled === true || globalThis.SFC_ANALYTICS === true || typeof document !== "undefined" && Boolean(
+      document.querySelector('[data-sfc-tools-root][data-analytics="on"]')
+    );
+  }
   function trackStorefrontEvent(eventName, {
     baseUrl = "/apps/sfc-tools",
     product = "sfc",
@@ -1128,8 +1133,7 @@
     fetchImpl = globalThis.fetch,
     enabled = null
   } = {}) {
-    const on = enabled === true || globalThis.SFC_ANALYTICS === true || typeof document !== "undefined" && document.querySelector('[data-sfc-tools-root][data-analytics="on"]');
-    if (!on) return Promise.resolve(null);
+    if (!isAnalyticsEnabled(enabled)) return Promise.resolve(null);
     const { anonymousId, sessionId } = getAnalyticsIds();
     const body = {
       product,
@@ -1171,7 +1175,7 @@
         loggedIn: root.dataset.customerLoggedIn === "true"
       }
     });
-    if (root.dataset.customerLoggedIn === "true") {
+    if (root.dataset.customerLoggedIn === "true" && isAnalyticsEnabled()) {
       const { sessionId } = getAnalyticsIds();
       const loginFlagKey = `sfc_login_ok_${sessionId}`;
       if (!storageGet(loginFlagKey, globalThis.sessionStorage)) {

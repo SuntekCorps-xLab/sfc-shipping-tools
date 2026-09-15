@@ -32,6 +32,7 @@ import {
   validateComplianceFile,
 } from '../extensions/storefront-tools/src/compliance.js';
 import {formatUsdApprox} from '../extensions/storefront-tools/src/rate-ui.js';
+import {isAnalyticsEnabled} from '../extensions/storefront-tools/src/analytics.js';
 
 describe('api.endpoint', () => {
   it('joins base and path', () => {
@@ -304,5 +305,44 @@ describe('warehouse contact privacy guard', () => {
     expect(orderCard).toBeTruthy();
     expect(orderCard).toContain('{% if customer %}');
     expect(orderCard).toContain('{% else %}');
+  });
+});
+
+describe('analytics privacy gate', () => {
+  it('is disabled by default with no document flag or global override', () => {
+    expect(isAnalyticsEnabled()).toBe(false);
+    expect(isAnalyticsEnabled(false)).toBe(false);
+  });
+
+  it('is enabled by an explicit flag or the global override', () => {
+    expect(isAnalyticsEnabled(true)).toBe(true);
+    globalThis.SFC_ANALYTICS = true;
+    try {
+      expect(isAnalyticsEnabled()).toBe(true);
+    } finally {
+      delete globalThis.SFC_ANALYTICS;
+    }
+  });
+
+  it('gates trackStorefrontEvent behind isAnalyticsEnabled', () => {
+    const source = readFileSync(
+      new URL(
+        '../extensions/storefront-tools/src/analytics.js',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    expect(source).toContain('export function isAnalyticsEnabled');
+    expect(source).toContain('if (!isAnalyticsEnabled(enabled)) return');
+  });
+
+  it('does not persist identifiers for logged-in customers when analytics is off', () => {
+    const source = readFileSync(
+      new URL('../extensions/storefront-tools/src/main.js', import.meta.url),
+      'utf8',
+    );
+    expect(source).toContain(
+      "root.dataset.customerLoggedIn === 'true' && isAnalyticsEnabled()",
+    );
   });
 });

@@ -50,6 +50,7 @@ import {
   storageGet,
   storageSet,
   getAnalyticsIds,
+  isAnalyticsEnabled,
   trackStorefrontEvent,
 } from './analytics.js';
 
@@ -80,7 +81,7 @@ function initSfcTools(root) {
       loggedIn: root.dataset.customerLoggedIn === 'true',
     },
   });
-  if (root.dataset.customerLoggedIn === 'true') {
+  if (root.dataset.customerLoggedIn === 'true' && isAnalyticsEnabled()) {
     const {sessionId} = getAnalyticsIds();
     const loginFlagKey = `sfc_login_ok_${sessionId}`;
     if (!storageGet(loginFlagKey, globalThis.sessionStorage)) {
