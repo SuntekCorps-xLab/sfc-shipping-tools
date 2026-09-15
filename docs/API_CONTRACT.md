@@ -45,6 +45,280 @@ Use generic public errors. Keep upstream payloads, stack traces, credentials, do
 | `POST /label` | Required | Return a label for an owned order |
 | `POST /event` | Optional | Best-effort storefront analytics; ignored when disabled |
 
+## Route reference
+
+Request and response shapes for each route, derived from what the storefront
+client actually sends and reads. All responses use the common envelope from
+[Common controls](#common-controls): a failure is `{"ok": false, "code", "message"}`
+with a stable `code` from [Stable error codes](#stable-error-codes). Optional
+fields may be omitted or `null`; the client renders them defensively.
+`tests/e2e/storefront.spec.js` encodes executable examples for `/rates`,
+`/balance`, and `/account-link`.
+
+Routes already specified elsewhere are cross-referenced rather than repeated:
+`GET /compliance` (Account review), `POST /cargo-compliance` (Cargo screening),
+`GET /compliance-file` (File handling), `POST /event` (Analytics).
+
+### POST /rates
+
+Request:
+
+```json
+{
+  "country": "US",
+  "state": "CA",
+  "city": "Los Angeles",
+  "zipCode": "90001",
+  "weight": 2,
+  "length": 20,
+  "width": 15,
+  "height": 10
+}
+```
+
+The client uppercases `country` and `zipCode`; `weight` is kg and each dimension
+is cm, sent as numbers.
+
+Success:
+
+```json
+{
+  "ok": true,
+  "rates": [
+    {
+      "serviceCode": "SFC-FAST",
+      "serviceName": "SFC Fast",
+      "amount": 120,
+      "currency": "RMB",
+      "transitTime": "5-8 days",
+      "amountUsd": 16.8
+    }
+  ]
+}
+```
+
+`amount` may be `null` when a price is unavailable; the UI then hides the order
+CTA for that rate. `serviceName`, `transitTime`, and `amountUsd` are optional —
+`amountUsd` drives an approximate USD display only and is never authoritative.
+
+### POST /tracking
+
+Request:
+
+```json
+{ "trackingNumber": "SF123456789" }
+```
+
+Success — the tracking payload is nested under `result`, not at the top level:
+
+```json
+{
+  "ok": true,
+  "result": {
+    "status": "In transit",
+    "trackingNumber": "SF123456789",
+    "orderCode": "SFC-ORDER-1",
+    "shippingChannel": "SFC Fast",
+    "destination": "United States",
+    "latestUpdate": "2026-09-01 10:00",
+    "hasEvents": true,
+    "events": [
+      { "time": "2026-09-01 10:00", "description": "Departed facility", "location": "Shenzhen" }
+    ]
+  }
+}
+```
+
+The client renders `response.result`. Within `result`, `orderCode`,
+`shippingChannel`, `destination`, `latestUpdate`, and each event's `location`
+are optional. `LOGIN_REQUIRED` and `BINDING_REQUIRED` failures drive a sign-in /
+link prompt.
+
+### POST /account-link
+
+Request: `{}` (intentionally empty). Success:
+
+```json
+{ "ok": true }
+```
+
+The client only checks `ok`. See [Account review](#account-review) for the
+linking rules.
+
+### GET /balance
+
+No request body. Success:
+
+```json
+{
+  "ok": true,
+  "balance": 100,
+  "currency": "RMB",
+  "balanceUsd": 14.0,
+  "userCode": "SFC12345"
+}
+```
+
+`balance` must be numeric — the client renders `Number(balance).toFixed(2)`, so
+a non-numeric or missing value shows `NaN`. `balanceUsd` and `userCode` are
+optional. A `BINDING_REQUIRED` failure is handled specially to show a linking
+state rather than an error.
+
+### GET /orders
+
+Query string: `?page=1&pageSize=20`. Success:
+
+```json
+{
+  "ok": true,
+  "page": 1,
+  "haveNext": true,
+  "total": 42,
+  "orders": [
+    {
+      "orderCode": "SFC-ORDER-1",
+      "sfcOrderCode": "SFC-ORDER-1",
+      "customerOrderNo": "CUST-1",
+      "domesticTrackingNo": "",
+      "shippingMethod": "SFC Fast",
+      "country": "US",
+      "countryName": "United States",
+      "addTime": "2026-09-01 10:00",
+      "status": "Shipped",
+      "trackingNumber": "SF123456789"
+    }
+  ]
+}
+```
+
+`page`, `haveNext`, and `total` drive pagination and the result count. Within
+each order, only `orderCode` is relied on directly; the remaining fields are
+optional and rendered defensively.
+
+### POST /order-fields
+
+Request:
+
+```json
+{ "shippingMethod": "SFC-FAST", "country": "US" }
+```
+
+Success:
+
+```json
+{
+  "ok": true,
+  "hasConfigure": true,
+  "fields": [
+    {
+      "key": "recipientName",
+      "group": "recipient",
+      "label": "Recipient name",
+      "required": true,
+      "visible": true,
+      "inputType": "text"
+    }
+  ]
+}
+```
+
+`fields` must be an array; each entry uses `key`, `group`, `label`, `required`,
+`visible`, and `inputType`. If `ok` is false or `fields` is missing, the client
+falls back to a built-in standard form. `hasConfigure: false` means the channel
+has no special field rules.
+
+### POST /compliance-account-class
+
+Request:
+
+```json
+{ "accountClass": "personal" }
+```
+
+`accountClass` is `personal` or `enterprise`. Success: `{ "ok": true }` with an
+optional `message`.
+
+### POST /compliance-profile
+
+Request:
+
+```json
+{ "trueName": "", "company": "", "creditId": "", "cardId": "" }
+```
+
+The client trims each field and sends empty strings as-is; the server decides
+completeness. Success: `{ "ok": true }` with an optional `message`.
+
+### POST /compliance-upload
+
+`multipart/form-data` with two parts: `kind` (string) and `file` (binary).
+Success: `{ "ok": true }` with an optional `message`. See
+[File handling](#file-handling) for the server-side validation rules.
+
+### POST /compliance-submit
+
+Request: `{}`. Success: `{ "ok": true }` together with the compliance state
+fields described in [Account review](#account-review).
+
+### POST /create-order
+
+Request: the full order payload assembled by the client (shipping method,
+destination, parcel, customs items, declarations, and channel-specific fields).
+Success:
+
+```json
+{
+  "ok": true,
+  "orderCode": "SFC-ORDER-1",
+  "customerOrderNo": "CUST-1",
+  "trackingNumber": "SF123456789"
+}
+```
+
+`customerOrderNo` and `trackingNumber` are optional. The server must repeat
+every gate in [Order creation invariants](#order-creation-invariants); failures
+use the common envelope with a stable `code`.
+
+### POST /domestic-tracking
+
+Request:
+
+```json
+{ "orderCode": "SFC-ORDER-1", "domesticTrackingNo": "SF987654321" }
+```
+
+Success:
+
+```json
+{ "ok": true, "domesticTrackingNo": "SF987654321" }
+```
+
+The client uses the returned `domesticTrackingNo` when present and otherwise
+falls back to the value it sent.
+
+### POST /label
+
+Request:
+
+```json
+{ "orderCode": "SFC-ORDER-1" }
+```
+
+Success:
+
+```json
+{
+  "ok": true,
+  "labelData": "<base64-encoded PDF>",
+  "fileName": "SFC-ORDER-1-label.pdf",
+  "orderCode": "SFC-ORDER-1"
+}
+```
+
+`labelData` is a base64-encoded PDF. `fileName` and `orderCode` are optional;
+the client falls back to `<orderCode>-label.pdf`. When a label is not ready yet,
+return `ok: false` with a customer-safe `message`.
+
 ## Account review
 
 `POST /account-link` must derive the Shopify customer from the verified App
