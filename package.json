@@ -18,7 +18,8 @@
     "env": "shopify app env",
     "start": "react-router-serve ./build/server/index.js",
     "setup": "prisma generate && prisma migrate deploy",
-    "lint": "eslint app extensions/storefront-tools/src scripts/build-storefront.mjs tests playwright.config.js vite.config.ts vitest.config.js --cache --cache-location ./node_modules/.cache/eslint",
+    "lint": "eslint app extensions/storefront-tools/src scripts/build-storefront.mjs scripts/lint-css.mjs tests playwright.config.js vite.config.ts vitest.config.js --cache --cache-location ./node_modules/.cache/eslint",
+    "lint:css": "node scripts/lint-css.mjs",
     "shopify": "shopify",
     "prisma": "prisma",
     "vite": "vite",
@@ -27,7 +28,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:watch": "vitest",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build:storefront && npm run build && npm run test:e2e"
+    "check": "npm run lint && npm run lint:css && npm run typecheck && npm test && npm run build:storefront && npm run build && npm run test:e2e"
   },
   "type": "module",
   "engines": {

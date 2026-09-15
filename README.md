@@ -280,6 +280,7 @@ See [docs/API_CONTRACT.md](docs/API_CONTRACT.md) for request, response, identity
 | Check | Command | Coverage |
 |---|---|---|
 | 🧹 Lint | `npm run lint` | App, storefront modules, scripts, and tests |
+| 🎨 CSS syntax | `npm run lint:css` | Storefront styles parse cleanly (no silently-dropped rules) |
 | 🧬 Type safety | `npm run typecheck` | React Router type generation and TypeScript |
 | 🧪 Unit / contract | `npm test` | Rate rendering, tracking validation, and order gates |
 | 🏗️ Storefront bundle | `npm run build:storefront` | Generated `sfc-tools.js` and `sfc-tools.css` |
