@@ -99,3 +99,43 @@ test('keeps order creation locked while account review is pending', async ({page
   await expect(page.locator('[data-compliance-review-label]')).toHaveText('Under review');
   await expect(page.locator('[data-order-panel]')).toBeHidden();
 });
+
+test('custom select is keyboard accessible, labelled, and supports type-ahead', async ({page}) => {
+  await serveStorefront(page);
+  await page.goto('/tests/fixtures/storefront.html');
+  const trigger = page.locator('.sfc-select__trigger');
+
+  // The trigger is named by the field label (not just the placeholder value)
+  // and exposes the listbox it controls.
+  await expect(trigger).toHaveAccessibleName(/Destination country \/ region/);
+  const listId = await trigger.getAttribute('aria-controls');
+  expect(listId).toBeTruthy();
+  await expect(page.locator(`#${listId}`)).toHaveAttribute('role', 'listbox');
+
+  // Opening by keyboard exposes the active option via aria-activedescendant.
+  await trigger.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  const openedActive = await trigger.getAttribute('aria-activedescendant');
+  expect(openedActive).toBeTruthy();
+  expect((await page.locator(`#${openedActive}`).textContent()).trim()).toBe(
+    'United States',
+  );
+
+  // First-letter type-ahead jumps to the matching option.
+  await page.keyboard.type('j');
+  const typedActive = await trigger.getAttribute('aria-activedescendant');
+  expect(typedActive).not.toBe(openedActive);
+  expect((await page.locator(`#${typedActive}`).textContent()).trim()).toBe(
+    'Japan',
+  );
+
+  // Arrow keys move the active option.
+  await page.keyboard.press('ArrowDown');
+  const arrowActive = await trigger.getAttribute('aria-activedescendant');
+  expect(arrowActive).not.toBe(typedActive);
+
+  // Tab collapses the list instead of leaving it open.
+  await page.keyboard.press('Tab');
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+});

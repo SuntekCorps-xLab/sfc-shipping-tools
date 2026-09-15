@@ -7,6 +7,15 @@
   </head>
   <body>
     <main data-sfc-tools-root data-api-base="/apps/sfc-tools" data-customer-logged-in="false">
+      <label class="field">
+        <span>Destination country / region</span>
+        <select name="countrySelect" data-enhance-select>
+          <option value="" disabled selected hidden>Select destination</option>
+          <option value="US">United States</option>
+          <option value="JP">Japan</option>
+          <option value="DE">Germany</option>
+        </select>
+      </label>
       <form data-rate-form novalidate>
         <label><input type="radio" name="firstMileMode" value="dropoff" checked data-first-mile-mode>Drop-off</label>
         <input name="country" value="US">

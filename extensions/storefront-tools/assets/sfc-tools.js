@@ -675,7 +675,13 @@
   }
 
   // extensions/storefront-tools/src/select.js
+  var idCounter = 0;
+  function nextId(prefix) {
+    idCounter += 1;
+    return `sfc-select-${prefix}-${idCounter}`;
+  }
   function enhanceSelect(select) {
+    var _a;
     if (!select || select.dataset.enhanced === "true") return;
     select.dataset.enhanced = "true";
     select.classList.add("sfc-select__native");
@@ -685,33 +691,49 @@
     wrap.className = "sfc-select";
     select.parentNode.insertBefore(wrap, select);
     wrap.appendChild(select);
+    const listId = nextId("list");
     const trigger = document.createElement("button");
     trigger.type = "button";
     trigger.className = "sfc-select__trigger";
     trigger.setAttribute("aria-haspopup", "listbox");
     trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-controls", listId);
     const label = document.createElement("span");
     label.className = "sfc-select__label";
+    label.id = nextId("value");
     const chevron = document.createElement("span");
     chevron.className = "sfc-select__chevron";
     chevron.setAttribute("aria-hidden", "true");
     trigger.append(label, chevron);
+    const fieldSpan = (_a = select.closest("label")) == null ? void 0 : _a.querySelector(":scope > span");
+    if (fieldSpan) {
+      if (!fieldSpan.id) fieldSpan.id = nextId("field");
+      trigger.setAttribute("aria-labelledby", `${fieldSpan.id} ${label.id}`);
+    } else {
+      trigger.setAttribute("aria-labelledby", label.id);
+    }
     const list = document.createElement("ul");
     list.className = "sfc-select__list";
+    list.id = listId;
     list.setAttribute("role", "listbox");
     list.hidden = true;
     wrap.append(trigger, list);
     let activeIndex = -1;
+    let searchBuffer = "";
+    let searchTimer = null;
     function optionNodes() {
       return Array.from(select.options);
     }
     function selectedOption() {
       return select.options[select.selectedIndex] || select.options[0];
     }
+    function optionButtons() {
+      return Array.from(list.querySelectorAll(".sfc-select__option"));
+    }
     function syncLabel() {
-      var _a;
+      var _a2;
       const opt = selectedOption();
-      const text = ((_a = opt == null ? void 0 : opt.textContent) == null ? void 0 : _a.trim()) || "Select";
+      const text = ((_a2 = opt == null ? void 0 : opt.textContent) == null ? void 0 : _a2.trim()) || "Select";
       label.textContent = text;
       label.classList.toggle("is-placeholder", !(opt == null ? void 0 : opt.value));
     }
@@ -725,6 +747,8 @@
         btn.type = "button";
         btn.className = "sfc-select__option";
         btn.setAttribute("role", "option");
+        btn.id = `${listId}-opt-${index}`;
+        btn.setAttribute("tabindex", "-1");
         btn.dataset.index = String(index);
         btn.dataset.value = opt.value;
         btn.textContent = opt.textContent.trim();
@@ -744,13 +768,16 @@
       });
     }
     function setActive(index) {
-      const buttons = list.querySelectorAll(".sfc-select__option");
+      const buttons = optionButtons();
       buttons.forEach((btn) => btn.classList.remove("is-active"));
       activeIndex = index;
       const current = buttons[index];
       if (current) {
         current.classList.add("is-active");
         current.scrollIntoView({ block: "nearest" });
+        trigger.setAttribute("aria-activedescendant", current.id);
+      } else {
+        trigger.removeAttribute("aria-activedescendant");
       }
     }
     function open() {
@@ -759,14 +786,16 @@
       wrap.classList.add("is-open");
       trigger.setAttribute("aria-expanded", "true");
       const selected = list.querySelector(".sfc-select__option.is-selected");
-      const buttons = Array.from(list.querySelectorAll(".sfc-select__option"));
+      const buttons = optionButtons();
       setActive(selected ? buttons.indexOf(selected) : 0);
     }
     function close() {
       list.hidden = true;
       wrap.classList.remove("is-open");
       trigger.setAttribute("aria-expanded", "false");
+      trigger.removeAttribute("aria-activedescendant");
       activeIndex = -1;
+      searchBuffer = "";
     }
     function choose(index) {
       const opt = select.options[index];
@@ -776,6 +805,19 @@
       syncLabel();
       close();
       trigger.focus();
+    }
+    function typeAhead(char) {
+      searchBuffer = (searchBuffer + char).toLowerCase();
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        searchBuffer = "";
+        searchTimer = null;
+      }, 600);
+      if (!wrap.classList.contains("is-open")) open();
+      const match = optionButtons().findIndex(
+        (btn) => btn.textContent.trim().toLowerCase().startsWith(searchBuffer)
+      );
+      if (match >= 0) setActive(match);
     }
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
@@ -791,7 +833,7 @@
           open();
           return;
         }
-        const buttons = list.querySelectorAll(".sfc-select__option");
+        const buttons = optionButtons();
         if (!buttons.length) return;
         const delta = event.key === "ArrowDown" ? 1 : -1;
         const next = Math.max(0, Math.min(buttons.length - 1, activeIndex + delta));
@@ -803,13 +845,20 @@
           return;
         }
         if (activeIndex >= 0) {
-          const btn = list.querySelectorAll(".sfc-select__option")[activeIndex];
+          const btn = optionButtons()[activeIndex];
           if (btn) choose(Number(btn.dataset.index));
         }
       } else if (event.key === "Escape" && openNow) {
         event.preventDefault();
         close();
+      } else if (event.key === "Tab") {
+        if (openNow) close();
+      } else if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        typeAhead(event.key);
       }
+    });
+    wrap.addEventListener("focusout", (event) => {
+      if (!wrap.contains(event.relatedTarget)) close();
     });
     document.addEventListener("click", (event) => {
       if (!wrap.contains(event.target)) close();
