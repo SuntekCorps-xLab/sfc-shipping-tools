@@ -226,11 +226,22 @@ Copy `.env.example` to `.env` for local app-shell development. It lists exactly 
 
 ## 🛍️ Storefront installation
 
+The `storefront-tools` extension ships **two** blocks that work together:
+
+| Block | Purpose | Where to place it |
+| --- | --- | --- |
+| **SFC shipping tools** | The main storefront: rate calculator, tracking, balance, and the order workspace. Its account menu links to the shipping center. | Your primary landing page (for example the home page or a "Shipping" page). |
+| **SFC shipping center** | The signed-in account area: overview and "My orders". | A page whose handle is **`shipping-center`**. |
+
+> [!IMPORTANT]
+> The **SFC shipping tools** block links its "Shipping Center" button to `/pages/shipping-center`. You must create a page with the handle `shipping-center` and add the **SFC shipping center** block to it, or that button will 404. The handle is a fixed convention; if your store needs a different page, adjust the link in the block Liquid accordingly.
+
 1. Configure an App Proxy with public prefix `/apps/sfc-tools` and a backend URL you control.
 2. Deploy the app and the `storefront-tools` theme app extension.
-3. In the Shopify theme editor, add **SFC shipping tools** to the desired page.
-4. Keep the block API base path as `/apps/sfc-tools` unless your proxy uses another path.
-5. Test with a development customer before enabling the block in a live theme.
+3. In the Shopify theme editor, add **SFC shipping tools** to the desired landing page.
+4. Create a page with the handle `shipping-center` and add the **SFC shipping center** block to it, so the main block's "Shipping Center" button resolves.
+5. Keep the block API base path as `/apps/sfc-tools` unless your proxy uses another path.
+6. Test with a development customer before enabling the blocks in a live theme.
 
 The registration and login URLs in the block schema are editable presentation links. They are not API credentials.
 
