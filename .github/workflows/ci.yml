@@ -17,6 +17,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # Required because prisma/schema.prisma uses env("DATABASE_URL").
+      # Session-store only; the SQLite file is ephemeral in CI.
+      DATABASE_URL: file:./dev.sqlite
     steps:
       - name: Check out repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683

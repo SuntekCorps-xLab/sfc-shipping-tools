@@ -214,6 +214,13 @@ Copy-Item shopify.theme.example.toml shopify.theme.toml
 
 Then link the local files to resources you control with Shopify CLI. Generated local configuration files are intentionally ignored by Git.
 
+### Environment variables
+
+Copy `.env.example` to `.env` for local app-shell development. It lists exactly the variables the app reads: `DATABASE_URL` (the Prisma session-store datasource, required by `prisma generate` / `prisma migrate`), `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SHOPIFY_APP_URL`, `SCOPES`, and the optional `SHOP_CUSTOM_DOMAIN`.
+
+> [!NOTE]
+> `.env` is loaded by `shopify app dev`. The production start script (`npm start` → `react-router-serve`) does **not** auto-load `.env`, so export the same variables in the environment before running it. `DATABASE_URL` must also be set wherever `prisma generate` runs (CI sets it explicitly).
+
 > [!CAUTION]
 > Never place an SFC token, Shopify client secret, session token, customer token, or production URL in Liquid settings or browser JavaScript.
 
