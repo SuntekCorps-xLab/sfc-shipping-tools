@@ -163,6 +163,7 @@ tests/e2e/                         Playwright browser-flow tests
 .github/workflows/ci.yml          CI verification pipeline
 shopify.app.example.toml          Safe app configuration template
 shopify.theme.example.toml        Safe theme configuration template
+shopify.web.toml                  Web config (dev commands); committed, no copy needed
 ```
 
 ## 🚀 Quick start
@@ -213,6 +214,9 @@ Copy-Item shopify.theme.example.toml shopify.theme.toml
 ```
 
 Then link the local files to resources you control with Shopify CLI. Generated local configuration files are intentionally ignored by Git.
+
+> [!NOTE]
+> `shopify.web.toml` is committed (it holds only dev commands, no secrets), so there is nothing to copy for it. It defines the `npm run dev` web commands (`prisma generate`, `prisma migrate deploy`, `react-router dev`). Only `shopify.app.toml` and `shopify.theme.toml` are local, git-ignored copies.
 
 ### Environment variables
 
