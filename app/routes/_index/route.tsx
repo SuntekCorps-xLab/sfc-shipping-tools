@@ -21,9 +21,10 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
+        <h1 className={styles.heading}>SFC Shipping Tools</h1>
         <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+          Add SFC shipping to your storefront: live rates, tracking, account
+          review, and shipment creation for your customers.
         </p>
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
@@ -39,16 +40,16 @@ export default function App() {
         )}
         <ul className={styles.list}>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Live rates</strong>. Customers compare SFC routes by price
+            and transit time before ordering.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Compliance gates</strong>. Account review and cargo screening
+            are enforced before an order is created.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Tracking &amp; labels</strong>. Customers track authorized
+            shipments and print labels in one place.
           </li>
         </ul>
       </div>
