@@ -13,23 +13,6 @@
 {%- endif -%}
 {%- assign sfc_api_base = block.settings.api_base | default: '/apps/sfc-tools' -%}
 
-<script>
-  (function () {
-    document.title = 'Shipping Center | SFC';
-    var faviconUrl = {{ 'favicon.ico' | asset_url | json }};
-    if (faviconUrl && document.head) {
-      var icon = document.head.querySelector('link[rel="icon"]');
-      if (!icon) {
-        icon = document.createElement('link');
-        icon.setAttribute('rel', 'icon');
-        document.head.appendChild(icon);
-      }
-      icon.setAttribute('type', 'image/png');
-      icon.setAttribute('href', faviconUrl);
-    }
-  })();
-</script>
-
 <div
   class="sfc-standalone sfc-shipping-center"
   data-sfc-tools-root

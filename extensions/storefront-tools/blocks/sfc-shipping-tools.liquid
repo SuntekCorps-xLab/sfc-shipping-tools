@@ -5,8 +5,6 @@
 <script src="{{ 'sfc-tools.js' | asset_url }}" defer></script>
 
 {% assign register_url = block.settings.register_url | default: 'https://ffment.sendfromchina.com/register?from=english' %}
-{% assign seo_title = block.settings.seo_title | default: 'Ship from China with SFC | Live Rates, Tracking & Balance' %}
-{% assign seo_description = block.settings.seo_description | default: 'Compare SFC shipping rates from China, sign in with Shopify, top up your SFC balance, place shipments, and track packages in one place.' %}
 {%- assign sfc_return_to = request.path | default: '/' -%}
 {%- if sfc_return_to == blank -%}
   {%- assign sfc_return_to = '/' -%}
@@ -16,48 +14,6 @@
 {%- else -%}
   {%- capture sfc_shopify_login_url -%}/customer_authentication/login?return_to={{ sfc_return_to | url_encode }}{%- endcapture -%}
 {%- endif -%}
-
-<script>
-  (function () {
-    var title = {{ seo_title | json }};
-    var description = {{ seo_description | json }};
-    var faviconUrl = {{ 'favicon.ico' | asset_url | json }};
-    if (title) document.title = title;
-    if (faviconUrl && document.head) {
-      var icon = document.head.querySelector('link[rel="icon"]');
-      if (!icon) {
-        icon = document.createElement('link');
-        icon.setAttribute('rel', 'icon');
-        document.head.appendChild(icon);
-      }
-      icon.setAttribute('type', 'image/png');
-      icon.setAttribute('href', faviconUrl);
-      var shortcut = document.head.querySelector('link[rel="shortcut icon"]');
-      if (!shortcut) {
-        shortcut = document.createElement('link');
-        shortcut.setAttribute('rel', 'shortcut icon');
-        document.head.appendChild(shortcut);
-      }
-      shortcut.setAttribute('type', 'image/png');
-      shortcut.setAttribute('href', faviconUrl);
-    }
-    function upsertMeta(attr, key, value) {
-      if (!value || !document.head) return;
-      var el = document.head.querySelector('meta[' + attr + '="' + key + '"]');
-      if (!el) {
-        el = document.createElement('meta');
-        el.setAttribute(attr, key);
-        document.head.appendChild(el);
-      }
-      el.setAttribute('content', value);
-    }
-    upsertMeta('name', 'description', description);
-    upsertMeta('property', 'og:title', title);
-    upsertMeta('property', 'og:description', description);
-    upsertMeta('name', 'twitter:title', title);
-    upsertMeta('name', 'twitter:description', description);
-  })();
-</script>
 
 <div
   class="sfc-standalone"
@@ -1045,18 +1001,6 @@
       "id": "register_url",
       "label": "SFC registration URL",
       "default": "https://ffment.sendfromchina.com/register?from=english"
-    },
-    {
-      "type": "text",
-      "id": "seo_title",
-      "label": "SEO title",
-      "default": "Ship from China with SFC | Live Rates, Tracking & Balance"
-    },
-    {
-      "type": "textarea",
-      "id": "seo_description",
-      "label": "SEO description",
-      "default": "Compare SFC shipping rates from China, sign in with Shopify, top up your SFC balance, place shipments, and track packages in one place."
     }
   ]
 }
