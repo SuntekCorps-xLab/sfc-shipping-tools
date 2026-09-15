@@ -1821,7 +1821,9 @@
     );
     root.querySelectorAll("[data-compliance-slot]").forEach((slot) => {
       const input = slot.querySelector("[data-compliance-file-input]");
+      const picker = slot.querySelector("[data-compliance-file-picker]");
       const kind = slot.getAttribute("data-compliance-slot");
+      picker == null ? void 0 : picker.addEventListener("click", () => input == null ? void 0 : input.click());
       input == null ? void 0 : input.addEventListener("change", async () => {
         var _a2;
         const file = (_a2 = input.files) == null ? void 0 : _a2[0];

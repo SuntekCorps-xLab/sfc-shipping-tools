@@ -804,7 +804,9 @@ function initSfcTools(root) {
 
   root.querySelectorAll('[data-compliance-slot]').forEach((slot) => {
     const input = slot.querySelector('[data-compliance-file-input]');
+    const picker = slot.querySelector('[data-compliance-file-picker]');
     const kind = slot.getAttribute('data-compliance-slot');
+    picker?.addEventListener('click', () => input?.click());
     input?.addEventListener('change', async () => {
       const file = input.files?.[0];
       input.value = '';

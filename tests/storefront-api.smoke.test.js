@@ -346,3 +346,34 @@ describe('analytics privacy gate', () => {
     );
   });
 });
+
+describe('compliance file picker keyboard access', () => {
+  const blockPaths = [
+    '../extensions/storefront-tools/blocks/sfc-shipping-tools.liquid',
+    '../extensions/storefront-tools/blocks/sfc-shipping-center.liquid',
+  ];
+
+  it('renders "Choose file" as a focusable button, not a non-focusable label', () => {
+    for (const path of blockPaths) {
+      const liquid = readFileSync(new URL(path, import.meta.url), 'utf8');
+      expect(liquid).toContain(
+        '<button type="button" class="button button--ghost button--compact" data-compliance-file-picker>',
+      );
+      expect(liquid).not.toMatch(/<label[^>]*>\s*Choose file/);
+      expect(liquid).toContain('data-compliance-file-input hidden');
+    }
+  });
+
+  it('wires the picker button to open the hidden file input', () => {
+    const source = readFileSync(
+      new URL('../extensions/storefront-tools/src/main.js', import.meta.url),
+      'utf8',
+    );
+    expect(source).toContain(
+      "slot.querySelector('[data-compliance-file-picker]')",
+    );
+    expect(source).toContain(
+      "picker?.addEventListener('click', () => input?.click())",
+    );
+  });
+});
