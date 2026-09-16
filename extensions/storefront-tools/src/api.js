@@ -7,13 +7,61 @@ export function endpoint(baseUrl, path) {
   return `${String(baseUrl || '/apps/sfc-tools').replace(/\/+$/, '')}/${path}`;
 }
 
-export async function postJson(url, body, fetchImpl = globalThis.fetch) {
-  const response = await fetchImpl(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: String(url).startsWith('/') ? 'same-origin' : 'omit',
-    body: JSON.stringify(body),
+/** Shared App Proxy request timeout (ms). */
+export const DEFAULT_TIMEOUT_MS = 15000;
+
+/**
+ * fetch with a timeout. Races the request against a timer and aborts it via
+ * AbortController, so a stalled App Proxy request rejects instead of leaving
+ * the storefront stuck in a loading state forever. Rejects with a TimeoutError
+ * on timeout. The race also covers fetch implementations that ignore the abort
+ * signal (so a hung request still settles).
+ */
+async function fetchWithTimeout(
+  url,
+  init,
+  fetchImpl,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+) {
+  const controller = new AbortController();
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      const error = new Error(
+        `SFC request to ${url} timed out after ${timeoutMs}ms`,
+      );
+      error.name = 'TimeoutError';
+      reject(error);
+    }, timeoutMs);
   });
+  try {
+    return await Promise.race([
+      fetchImpl(url, {...init, signal: controller.signal}),
+      timeout,
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function postJson(
+  url,
+  body,
+  fetchImpl = globalThis.fetch,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+) {
+  const response = await fetchWithTimeout(
+    url,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: String(url).startsWith('/') ? 'same-origin' : 'omit',
+      body: JSON.stringify(body),
+    },
+    fetchImpl,
+    timeoutMs,
+  );
   return response.json();
 }
 
@@ -65,15 +113,15 @@ export function queryTracking(
 }
 
 export async function fetchBalance(
-  {baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch} = {},
+  {baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS} = {},
 ) {
-  const response = await fetchImpl(endpoint(baseUrl, 'balance'), {
+  const response = await fetchWithTimeout(endpoint(baseUrl, 'balance'), {
     method: 'GET',
     credentials: String(endpoint(baseUrl, 'balance')).startsWith('/')
       ? 'same-origin'
       : 'omit',
     headers: {Accept: 'application/json'},
-  });
+  }, fetchImpl, timeoutMs);
   return response.json();
 }
 
@@ -108,9 +156,9 @@ export function bindDomesticTracking(
 }
 
 export async function fetchOrders(
-  {page = 1, pageSize = 20, baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch} = {},
+  {page = 1, pageSize = 20, baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS} = {},
 ) {
-  const response = await fetchImpl(
+  const response = await fetchWithTimeout(
     `${endpoint(baseUrl, 'orders')}?page=${encodeURIComponent(page)}&pageSize=${encodeURIComponent(pageSize)}`,
     {
       method: 'GET',
@@ -119,20 +167,22 @@ export async function fetchOrders(
         : 'omit',
       headers: {Accept: 'application/json'},
     },
+    fetchImpl,
+    timeoutMs,
   );
   return response.json();
 }
 
 export async function fetchCompliance(
-  {baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch} = {},
+  {baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS} = {},
 ) {
-  const response = await fetchImpl(endpoint(baseUrl, 'compliance'), {
+  const response = await fetchWithTimeout(endpoint(baseUrl, 'compliance'), {
     method: 'GET',
     credentials: String(endpoint(baseUrl, 'compliance')).startsWith('/')
       ? 'same-origin'
       : 'omit',
     headers: {Accept: 'application/json'},
-  });
+  }, fetchImpl, timeoutMs);
   return response.json();
 }
 
@@ -164,18 +214,18 @@ export function saveComplianceProfile(
 }
 
 export async function uploadComplianceFile(
-  {kind, file, baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch} = {},
+  {kind, file, baseUrl = '/apps/sfc-tools', fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS} = {},
 ) {
   const form = new FormData();
   form.append('kind', String(kind ?? '').trim());
   form.append('file', file);
-  const response = await fetchImpl(endpoint(baseUrl, 'compliance-upload'), {
+  const response = await fetchWithTimeout(endpoint(baseUrl, 'compliance-upload'), {
     method: 'POST',
     credentials: String(endpoint(baseUrl, 'compliance-upload')).startsWith('/')
       ? 'same-origin'
       : 'omit',
     body: form,
-  });
+  }, fetchImpl, timeoutMs);
   return response.json();
 }
 

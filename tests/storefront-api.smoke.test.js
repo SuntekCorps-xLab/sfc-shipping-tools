@@ -13,6 +13,7 @@ import {
   createSfcOrder,
   submitComplianceReview,
   checkCargoCompliance,
+  fetchBalance,
 } from '../extensions/storefront-tools/src/api.js';
 import {
   validateRateInput,
@@ -95,6 +96,33 @@ describe('api clients', () => {
       '/apps/sfc-tools/create-order',
     ]);
     expect(JSON.parse(fetchImpl.mock.calls[1][1].body)).toEqual({});
+  });
+});
+
+describe('api request timeout', () => {
+  const neverSettles = () => new Promise(() => {});
+
+  it('rejects a POST whose request never settles', async () => {
+    await expect(
+      postJson('/apps/sfc-tools/rates', {}, neverSettles, 30),
+    ).rejects.toThrow(/timed out/i);
+  });
+
+  it('rejects a GET whose request never settles', async () => {
+    await expect(
+      fetchBalance({fetchImpl: neverSettles, timeoutMs: 30}),
+    ).rejects.toThrow(/timed out/i);
+  });
+
+  it('rejects with a TimeoutError so callers can render the error state', async () => {
+    await expect(
+      postJson('/apps/sfc-tools/rates', {}, neverSettles, 30),
+    ).rejects.toMatchObject({name: 'TimeoutError'});
+  });
+
+  it('still resolves a request that settles before the timeout', async () => {
+    const fetchImpl = vi.fn(async () => ({json: async () => ({ok: true})}));
+    await expect(postJson('/apps/sfc-tools/rates', {}, fetchImpl, 1000)).resolves.toEqual({ok: true});
   });
 });
 

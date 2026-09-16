@@ -4,13 +4,41 @@
   function endpoint(baseUrl, path) {
     return `${String(baseUrl || "/apps/sfc-tools").replace(/\/+$/, "")}/${path}`;
   }
-  async function postJson(url, body, fetchImpl = globalThis.fetch) {
-    const response = await fetchImpl(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: String(url).startsWith("/") ? "same-origin" : "omit",
-      body: JSON.stringify(body)
+  var DEFAULT_TIMEOUT_MS = 15e3;
+  async function fetchWithTimeout(url, init, fetchImpl, timeoutMs = DEFAULT_TIMEOUT_MS) {
+    const controller = new AbortController();
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        controller.abort();
+        const error = new Error(
+          `SFC request to ${url} timed out after ${timeoutMs}ms`
+        );
+        error.name = "TimeoutError";
+        reject(error);
+      }, timeoutMs);
     });
+    try {
+      return await Promise.race([
+        fetchImpl(url, { ...init, signal: controller.signal }),
+        timeout
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  async function postJson(url, body, fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS) {
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: String(url).startsWith("/") ? "same-origin" : "omit",
+        body: JSON.stringify(body)
+      },
+      fetchImpl,
+      timeoutMs
+    );
     return response.json();
   }
   function linkAccount({ baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
@@ -50,12 +78,12 @@
       fetchImpl
     );
   }
-  async function fetchBalance({ baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
-    const response = await fetchImpl(endpoint(baseUrl, "balance"), {
+  async function fetchBalance({ baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+    const response = await fetchWithTimeout(endpoint(baseUrl, "balance"), {
       method: "GET",
       credentials: String(endpoint(baseUrl, "balance")).startsWith("/") ? "same-origin" : "omit",
       headers: { Accept: "application/json" }
-    });
+    }, fetchImpl, timeoutMs);
     return response.json();
   }
   async function fetchOrderFields(shippingMethod, country, { baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
@@ -74,23 +102,25 @@
   function bindDomesticTracking(payload, { baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
     return postJson(endpoint(baseUrl, "domestic-tracking"), payload, fetchImpl);
   }
-  async function fetchOrders({ page = 1, pageSize = 20, baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
-    const response = await fetchImpl(
+  async function fetchOrders({ page = 1, pageSize = 20, baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+    const response = await fetchWithTimeout(
       `${endpoint(baseUrl, "orders")}?page=${encodeURIComponent(page)}&pageSize=${encodeURIComponent(pageSize)}`,
       {
         method: "GET",
         credentials: String(endpoint(baseUrl, "orders")).startsWith("/") ? "same-origin" : "omit",
         headers: { Accept: "application/json" }
-      }
+      },
+      fetchImpl,
+      timeoutMs
     );
     return response.json();
   }
-  async function fetchCompliance({ baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
-    const response = await fetchImpl(endpoint(baseUrl, "compliance"), {
+  async function fetchCompliance({ baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+    const response = await fetchWithTimeout(endpoint(baseUrl, "compliance"), {
       method: "GET",
       credentials: String(endpoint(baseUrl, "compliance")).startsWith("/") ? "same-origin" : "omit",
       headers: { Accept: "application/json" }
-    });
+    }, fetchImpl, timeoutMs);
     return response.json();
   }
   function setComplianceAccountClass(accountClass, { baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
@@ -113,15 +143,15 @@
       fetchImpl
     );
   }
-  async function uploadComplianceFile({ kind, file, baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
+  async function uploadComplianceFile({ kind, file, baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
     const form = new FormData();
     form.append("kind", String(kind != null ? kind : "").trim());
     form.append("file", file);
-    const response = await fetchImpl(endpoint(baseUrl, "compliance-upload"), {
+    const response = await fetchWithTimeout(endpoint(baseUrl, "compliance-upload"), {
       method: "POST",
       credentials: String(endpoint(baseUrl, "compliance-upload")).startsWith("/") ? "same-origin" : "omit",
       body: form
-    });
+    }, fetchImpl, timeoutMs);
     return response.json();
   }
   function submitComplianceReview({ baseUrl = "/apps/sfc-tools", fetchImpl = globalThis.fetch } = {}) {
