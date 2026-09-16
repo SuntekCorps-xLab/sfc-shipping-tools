@@ -26,13 +26,22 @@
 >
   <a class="skip-link" href="#SfcMain">Skip to main content</a>
 
+  {% comment %} Localized strings for the bundled JS, read by src/i18n.js. Add keys here as JS copy is migrated. {% endcomment %}
+  <script type="application/json" data-sfc-i18n>
+    {
+      "js.rate_invalid_title": {{ 'js.rate_invalid_title' | t | json }},
+      "js.rate_empty_title": {{ 'js.rate_empty_title' | t | json }},
+      "js.rate_empty_body": {{ 'js.rate_empty_body' | t | json }}
+    }
+  </script>
+
   <div class="site-header">
     <div class="utility-bar container">
       <p>SFC customer support for ecommerce shipping from China.</p>
       <div class="utility-links" aria-label="Utility navigation">
         <a href="#SfcProcess">Service process</a>
         <a href="#SfcTracking">Tracking help</a>
-        <span>EN</span>
+        <span>{{ 'header.language' | t }}</span>
       </div>
     </div>
 
@@ -232,9 +241,9 @@
 
           <div class="pickup-origin" data-pickup-origin>
             <label class="field">
-              <span>Pickup province (China)</span>
+              <span>{{ 'rate_form.pickup_province' | t }}</span>
               <select name="pickupProvince" data-pickup-province data-enhance-select required>
-                <option value="" selected>Select province</option>
+                <option value="" selected>{{ 'rate_form.pickup_province_placeholder' | t }}</option>
                 <option value="Guangdong">Guangdong 广东</option>
                 <option value="Hunan">Hunan 湖南</option>
                 <option value="Jiangxi">Jiangxi 江西</option>
@@ -268,7 +277,7 @@
                 <option value="Tibet">Tibet 西藏</option>
               </select>
             </label>
-            <p class="pickup-origin__hint">For estimate only. Full pickup address is asked when you order.</p>
+            <p class="pickup-origin__hint">{{ 'rate_form.pickup_origin_hint' | t }}</p>
           </div>
 
           <div class="warehouse-card" data-warehouse-card hidden>
@@ -279,15 +288,15 @@
             {% if customer %}
               <p class="warehouse-card__line" data-warehouse-address>广东省惠州市惠阳区白石村明泰路17号朝鲲产业园,三态速递一楼</p>
               <p class="warehouse-card__meta">
-                <span>收件人：<strong data-warehouse-contact>刘正+Y5169</strong></span>
-                <span>电话：<strong data-warehouse-phone>18938091512</strong></span>
+                <span>{{ 'warehouse.recipient' | t }}: <strong data-warehouse-contact>刘正+Y5169</strong></span>
+                <span>{{ 'warehouse.phone' | t }}: <strong data-warehouse-phone>18938091512</strong></span>
               </p>
               <p class="warehouse-card__note">Mark your order reference on the parcel when you drop off.</p>
             {% else %}
               <p class="warehouse-card__line" data-warehouse-address>广东省惠州市**************</p>
               <p class="warehouse-card__meta">
-                <span>收件人：<strong data-warehouse-contact>******</strong></span>
-                <span>电话：<strong data-warehouse-phone>***********</strong></span>
+                <span>{{ 'warehouse.recipient' | t }}: <strong data-warehouse-contact>******</strong></span>
+                <span>{{ 'warehouse.phone' | t }}: <strong data-warehouse-phone>***********</strong></span>
               </p>
               <p class="warehouse-card__note">Sign in to view the full warehouse address and copy it.</p>
             {% endif %}
@@ -300,10 +309,10 @@
 
           <div class="form-grid form-grid--two">
             <label class="field">
-              <span>Destination country / region</span>
+              <span>{{ 'rate_form.destination' | t }}</span>
               {% comment %} Options are populated at runtime from the ISO-3166 list in src/countries.js (see data-country-options). {% endcomment %}
               <select name="country" required data-enhance-select data-country-options>
-                <option value="" disabled selected hidden>Select destination</option>
+                <option value="" disabled selected hidden>{{ 'rate_form.destination_placeholder' | t }}</option>
               </select>
             </label>
             <label class="field">
@@ -380,14 +389,14 @@
               {% if customer %}
                 <p class="warehouse-card__line" data-warehouse-address>广东省惠州市惠阳区白石村明泰路17号朝鲲产业园,三态速递一楼</p>
                 <p class="warehouse-card__meta">
-                  <span>收件人：<strong data-warehouse-contact>刘正+Y5169</strong></span>
-                  <span>电话：<strong data-warehouse-phone>18938091512</strong></span>
+                  <span>{{ 'warehouse.recipient' | t }}: <strong data-warehouse-contact>刘正+Y5169</strong></span>
+                  <span>{{ 'warehouse.phone' | t }}: <strong data-warehouse-phone>18938091512</strong></span>
                 </p>
               {% else %}
                 <p class="warehouse-card__line" data-warehouse-address>广东省惠州市**************</p>
                 <p class="warehouse-card__meta">
-                  <span>收件人：<strong data-warehouse-contact>******</strong></span>
-                  <span>电话：<strong data-warehouse-phone>***********</strong></span>
+                  <span>{{ 'warehouse.recipient' | t }}: <strong data-warehouse-contact>******</strong></span>
+                  <span>{{ 'warehouse.phone' | t }}: <strong data-warehouse-phone>***********</strong></span>
                 </p>
                 <p class="warehouse-card__note">Sign in to view the full warehouse address and copy it.</p>
               {% endif %}
@@ -425,7 +434,7 @@
                 </label>
                 <label class="field field--wide">
                   <span>Pickup address *</span>
-                  <input name="pickupAddress" type="text" maxlength="200" autocomplete="street-address" data-order-pickup-address placeholder="省、市、街道、门牌号">
+                  <input name="pickupAddress" type="text" maxlength="200" autocomplete="street-address" data-order-pickup-address placeholder="{{ 'order_form.pickup_address_placeholder' | t }}">
                 </label>
               </div>
               <p class="pickup-origin__hint">Our ops team will be notified after you place the order (manual pickup arrangement).</p>
@@ -967,32 +976,32 @@
     {
       "type": "text",
       "id": "heading",
-      "label": "Heading",
+      "label": "t:settings.heading.label",
       "default": "Ship from China,"
     },
     {
       "type": "text",
       "id": "accent_heading",
-      "label": "Accent heading",
+      "label": "t:settings.accent_heading.label",
       "default": "with every step in view."
     },
     {
       "type": "textarea",
       "id": "intro",
-      "label": "Introduction",
+      "label": "t:settings.intro.label",
       "default": "Compare SFC routes, sign in with Shopify, top up your balance in-store, and move from a first quote to your next shipment."
     },
     {
       "type": "text",
       "id": "api_base",
-      "label": "API base path",
+      "label": "t:settings.api_base.label",
       "default": "/apps/sfc-tools",
-      "info": "Storefront App Proxy base path, e.g. /apps/sfc-tools. Never put API keys here."
+      "info": "t:settings.api_base.tools_info"
     },
     {
       "type": "text",
       "id": "register_url",
-      "label": "SFC registration URL",
+      "label": "t:settings.register_url.label",
       "default": "https://ffment.sendfromchina.com/register?from=english"
     }
   ]

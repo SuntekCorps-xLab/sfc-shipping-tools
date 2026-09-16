@@ -30,7 +30,7 @@
       <div class="utility-links" aria-label="Utility navigation">
         <a href="{{ routes.root_url }}#SfcProcess">Service process</a>
         <a href="{{ routes.root_url }}#SfcTracking">Tracking help</a>
-        <span>EN</span>
+        <span>{{ 'header.language' | t }}</span>
       </div>
     </div>
 
@@ -333,9 +333,9 @@
     {
       "type": "text",
       "id": "api_base",
-      "label": "API base path",
+      "label": "t:settings.api_base.label",
       "default": "/apps/sfc-tools",
-      "info": "Used for account menu balance / customer code. Never put API keys here."
+      "info": "t:settings.api_base.center_info"
     }
   ]
 }

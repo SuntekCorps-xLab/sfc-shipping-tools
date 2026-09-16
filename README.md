@@ -251,6 +251,16 @@ The registration URL in the block schema is an editable presentation link. It is
 
 The rate form's destination dropdown is populated at runtime from the full ISO 3166-1 alpha-2 list in `extensions/storefront-tools/src/countries.js` (every officially-assigned country, so the "220+ countries" claim holds). To limit or rename the offered destinations, edit the `COUNTRIES` array there and rebuild the storefront bundle; the backend still decides which destinations it can quote.
 
+### Translation
+
+Storefront copy is localizable through Shopify's translation tooling. Strings live in `extensions/storefront-tools/locales/en.default.json`:
+
+- **Liquid** renders them with `{{ 'key' | t }}` (for example the rate-form labels, placeholders, and the warehouse card).
+- **Block schema** settings use `"label": "t:key"` / `"info": "t:key"`, so the theme-editor fields are translatable.
+- **Bundled JS** reads translations from a `<script type="application/json" data-sfc-i18n>` blob that Liquid renders into the block; `src/i18n.js` exposes `t(key, fallback)`. Every JS call passes an English fallback, so a missing key never blanks the UI.
+
+To add a language, create `locales/<lang>.json` mirroring the same keys. The migration is **partial**: the block schema, the rate-form / warehouse Liquid copy, the language badge, and a first set of JS strings are localized; the remaining long-tail Liquid and JS strings still need migrating (add the key to the locale, then reference it with `| t`, `t:`, or `t(key, fallback)`). A unit test fails if any referenced key is missing from the locale.
+
 ## 🔌 API surface
 
 The storefront client calls these App Proxy routes:

@@ -1,5 +1,49 @@
 {
   "sfc_shipping_tools": {
     "name": "SFC shipping tools"
+  },
+  "sfc_shipping_center": {
+    "name": "SFC shipping center"
+  },
+  "settings": {
+    "heading": {
+      "label": "Heading"
+    },
+    "accent_heading": {
+      "label": "Accent heading"
+    },
+    "intro": {
+      "label": "Introduction"
+    },
+    "api_base": {
+      "label": "API base path",
+      "tools_info": "Storefront App Proxy base path, e.g. /apps/sfc-tools. Never put API keys here.",
+      "center_info": "Used for account menu balance / customer code. Never put API keys here."
+    },
+    "register_url": {
+      "label": "SFC registration URL"
+    }
+  },
+  "header": {
+    "language": "EN"
+  },
+  "rate_form": {
+    "destination": "Destination country / region",
+    "destination_placeholder": "Select destination",
+    "pickup_province": "Pickup province (China)",
+    "pickup_province_placeholder": "Select province",
+    "pickup_origin_hint": "For estimate only. Full pickup address is asked when you order."
+  },
+  "order_form": {
+    "pickup_address_placeholder": "Province, city, street, building number"
+  },
+  "warehouse": {
+    "recipient": "Recipient",
+    "phone": "Phone"
+  },
+  "js": {
+    "rate_invalid_title": "Check the shipment details",
+    "rate_empty_title": "No shipping services found",
+    "rate_empty_body": "Try another destination or parcel size."
   }
 }

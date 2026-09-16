@@ -542,3 +542,69 @@ describe('destination country list', () => {
     expect(liquid).not.toContain('<option value="GB">United Kingdom</option>');
   });
 });
+
+describe('storefront i18n keys', () => {
+  const locale = JSON.parse(
+    readFileSync(
+      new URL(
+        '../extensions/storefront-tools/locales/en.default.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+
+  function flattenKeys(obj, prefix = '', out = new Set()) {
+    for (const [key, value] of Object.entries(obj)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (value && typeof value === 'object') flattenKeys(value, path, out);
+      else out.add(path);
+    }
+    return out;
+  }
+  const localeKeys = flattenKeys(locale);
+
+  function collect(file, patterns) {
+    const src = readFileSync(new URL(file, import.meta.url), 'utf8');
+    const found = new Set();
+    for (const re of patterns) {
+      for (const match of src.matchAll(re)) found.add(match[1]);
+    }
+    return found;
+  }
+
+  it('resolves every Liquid {{ | t }} and schema t: key from the locale', () => {
+    const refs = new Set();
+    for (const block of [
+      '../extensions/storefront-tools/blocks/sfc-shipping-tools.liquid',
+      '../extensions/storefront-tools/blocks/sfc-shipping-center.liquid',
+    ]) {
+      for (const key of collect(block, [
+        /'([^']+)'\s*\|\s*t\b/g,
+        /"t:([^"]+)"/g,
+      ])) {
+        refs.add(key);
+      }
+    }
+    expect(refs.size).toBeGreaterThan(0);
+    for (const key of refs) {
+      expect(localeKeys.has(key), `missing locale key: ${key}`).toBe(true);
+    }
+  });
+
+  it('resolves every JS t(key, fallback) key from the locale', () => {
+    const refs = new Set();
+    for (const file of [
+      '../extensions/storefront-tools/src/main.js',
+      '../extensions/storefront-tools/src/rate-ui.js',
+    ]) {
+      for (const key of collect(file, [/\bt\(\s*'([^']+)'\s*,/g])) {
+        refs.add(key);
+      }
+    }
+    expect(refs.size).toBeGreaterThan(0);
+    for (const key of refs) {
+      expect(localeKeys.has(key), `missing locale key: ${key}`).toBe(true);
+    }
+  });
+});

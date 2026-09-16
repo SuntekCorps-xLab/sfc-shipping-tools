@@ -1158,6 +1158,16 @@
     container.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
+  // extensions/storefront-tools/src/i18n.js
+  var translations = {};
+  function setTranslations(next) {
+    translations = next && typeof next === "object" ? next : {};
+  }
+  function t(key, fallback) {
+    const value = translations[key];
+    return typeof value === "string" && value !== "" ? value : fallback;
+  }
+
   // extensions/storefront-tools/src/rate-ui.js
   var RATE_PAGE_SIZE = 6;
   function hasPrice(rate) {
@@ -1337,7 +1347,10 @@
         }
       );
       if (!rates.length) {
-        renderState("No shipping services found", "Try another destination or parcel size.");
+        renderState(
+          t("js.rate_empty_title", "No shipping services found"),
+          t("js.rate_empty_body", "Try another destination or parcel size.")
+        );
         return;
       }
       const heading = element("div", "rate-result-heading");
@@ -1505,6 +1518,13 @@
     var _a, _b, _c, _d, _e, _f;
     if (!root || root.dataset.sfcInitialized === "true") return;
     root.dataset.sfcInitialized = "true";
+    const i18nEl = root.querySelector("[data-sfc-i18n]");
+    if (i18nEl) {
+      try {
+        setTranslations(JSON.parse(i18nEl.textContent));
+      } catch (e) {
+      }
+    }
     const apiBase = root.dataset.apiBase || "/apps/sfc-tools";
     const analyticsProduct = root.dataset.analyticsProduct || "sfc";
     const rateForm = root.querySelector("[data-rate-form]");
@@ -3962,7 +3982,7 @@
         postalCode: input.zipCode
       });
       if (!validation.valid) {
-        renderRateState("Check the shipment details", validation.message, {
+        renderRateState(t("js.rate_invalid_title", "Check the shipment details"), validation.message, {
           error: true
         });
         if (input.firstMileMode === "pickup" && !input.pickupProvince) {

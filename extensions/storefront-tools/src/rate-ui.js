@@ -3,6 +3,7 @@
 
 import {clear, element, focusResult} from './dom.js';
 import {approxUsdFromRate, estimateFirstMileRmb} from './rates.js';
+import {t} from './i18n.js';
 
 const RATE_PAGE_SIZE = 6;
 
@@ -228,7 +229,10 @@ export function createRateUi({root, results, getParcel, onStartOrder}) {
       },
     );
     if (!rates.length) {
-      renderState('No shipping services found', 'Try another destination or parcel size.');
+      renderState(
+        t('js.rate_empty_title', 'No shipping services found'),
+        t('js.rate_empty_body', 'Try another destination or parcel size.'),
+      );
       return;
     }
 

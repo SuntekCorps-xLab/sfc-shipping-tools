@@ -54,6 +54,7 @@ import {
   isAnalyticsEnabled,
   trackStorefrontEvent,
 } from './analytics.js';
+import { setTranslations, t } from './i18n.js';
 
 /**
  * Focus a form field for validation. When the field is a <select> that
@@ -77,6 +78,17 @@ function focusFormField(target) {
 function initSfcTools(root) {
   if (!root || root.dataset.sfcInitialized === 'true') return;
   root.dataset.sfcInitialized = 'true';
+
+  // Load localized strings for the bundled JS (rendered by Liquid). Missing
+  // keys fall back to the English literals passed to t().
+  const i18nEl = root.querySelector('[data-sfc-i18n]');
+  if (i18nEl) {
+    try {
+      setTranslations(JSON.parse(i18nEl.textContent));
+    } catch {
+      /* keep English fallbacks */
+    }
+  }
 
   const apiBase = root.dataset.apiBase || '/apps/sfc-tools';
   const analyticsProduct = root.dataset.analyticsProduct || 'sfc';
@@ -2890,7 +2902,7 @@ function initSfcTools(root) {
       postalCode: input.zipCode,
     });
     if (!validation.valid) {
-      renderRateState('Check the shipment details', validation.message, {
+      renderRateState(t('js.rate_invalid_title', 'Check the shipment details'), validation.message, {
         error: true,
       });
       if (input.firstMileMode === 'pickup' && !input.pickupProvince) {
