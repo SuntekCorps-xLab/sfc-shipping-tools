@@ -44,7 +44,7 @@
   font-weight: 900;
   letter-spacing: 0.16em;
 }
-.sfc-standalone .hero h1 {
+.sfc-standalone .hero h2 {
   max-width: 650px;
   margin-bottom: 24px;
   font-family: var(--display);

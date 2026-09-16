@@ -26,7 +26,7 @@
 >
   <a class="skip-link" href="#SfcMain">Skip to main content</a>
 
-  <header class="site-header">
+  <div class="site-header">
     <div class="utility-bar container">
       <p>SFC customer support for ecommerce shipping from China.</p>
       <div class="utility-links" aria-label="Utility navigation">
@@ -103,7 +103,7 @@
         {% endif %}
       </div>
     </nav>
-  </header>
+  </div>
 
   <div class="pending-order-banner" data-pending-order-banner hidden>
     <div class="container pending-order-banner__inner">
@@ -119,15 +119,15 @@
     </div>
   </div>
 
-  <main id="SfcMain">
+  <div id="SfcMain">
     <section class="hero" id="SfcTop">
       <div class="container hero__grid">
         <div class="hero__copy">
           <p class="eyebrow">CHINA FULFILLMENT · GLOBAL DELIVERY</p>
-          <h1>
+          <h2>
             <span class="hero__line hero__line--ink">{{ block.settings.heading | escape }}</span>
             <span class="hero__line hero__line--signal">{{ block.settings.accent_heading | escape }}</span>
-          </h1>
+          </h2>
           <p class="hero__lede">{{ block.settings.intro | escape }}</p>
 
           <ul class="hero__proofs">
@@ -775,9 +775,9 @@
         {% endif %}
       </div>
     </section>
-  </main>
+  </div>
 
-  <footer class="site-footer">
+  <div class="site-footer">
     <div class="container footer-grid">
       <div>
         <a class="brand brand--footer" href="#SfcTop" aria-label="Back to top">
@@ -805,7 +805,7 @@
       <span>© <span data-current-year></span> SFC Shipping Tools</span>
       <span>Live results require the server-side SFC gateway.</span>
     </div>
-  </footer>
+  </div>
 
   <dialog class="order-detail-dialog" data-compliance-dialog>
     <div class="order-detail-dialog__panel">

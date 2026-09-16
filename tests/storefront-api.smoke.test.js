@@ -411,3 +411,31 @@ describe('compliance file picker keyboard access', () => {
     );
   });
 });
+
+describe('block landmark hygiene', () => {
+  const blockPaths = [
+    '../extensions/storefront-tools/blocks/sfc-shipping-tools.liquid',
+    '../extensions/storefront-tools/blocks/sfc-shipping-center.liquid',
+  ];
+
+  it('ships no page-level landmarks that clash with the host theme', () => {
+    for (const path of blockPaths) {
+      const liquid = readFileSync(new URL(path, import.meta.url), 'utf8');
+      // The block renders inside the theme's <main>, so it must not add a
+      // second main/h1/header/footer (nested + duplicate landmarks).
+      expect(liquid).not.toMatch(/<main[\s>]/);
+      expect(liquid).not.toMatch(/<h1[\s>]/);
+      expect(liquid).not.toMatch(/<header[\s>]/);
+      expect(liquid).not.toMatch(/<footer[\s>]/);
+    }
+  });
+
+  it('keeps the skip-link targets as plain containers with stable ids', () => {
+    const main = readFileSync(new URL(blockPaths[0], import.meta.url), 'utf8');
+    const center = readFileSync(new URL(blockPaths[1], import.meta.url), 'utf8');
+    expect(main).toContain('<div id="SfcMain">');
+    expect(main).toContain('href="#SfcMain"');
+    expect(center).toContain('id="SfcCenterMain"');
+    expect(center).toContain('href="#SfcCenterMain"');
+  });
+});

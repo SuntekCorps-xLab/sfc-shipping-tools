@@ -669,7 +669,7 @@
     padding-bottom: 64px;
   }
 
-  .sfc-standalone .hero h1 {
+  .sfc-standalone .hero h2 {
     font-size: clamp(38px, 11vw, 48px);
   }
   .sfc-standalone .hero__lede {
