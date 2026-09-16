@@ -31,7 +31,7 @@ import {
   validateCargoDeclaration,
   validateComplianceFile,
 } from '../extensions/storefront-tools/src/compliance.js';
-import {formatUsdApprox} from '../extensions/storefront-tools/src/rate-ui.js';
+import {formatUsdApprox, rateSortValue} from '../extensions/storefront-tools/src/rate-ui.js';
 import {isAnalyticsEnabled} from '../extensions/storefront-tools/src/analytics.js';
 
 describe('api.endpoint', () => {
@@ -107,6 +107,40 @@ describe('rate UI formatting', () => {
     expect(formatUsdApprox(null)).toBe('');
     expect(formatUsdApprox('')).toBe('');
     expect(formatUsdApprox('not-a-number')).toBe('');
+  });
+});
+
+describe('rate price sorting', () => {
+  it('treats a finite amount as its price and anything else as unpriced', () => {
+    expect(rateSortValue({amount: 80})).toBe(80);
+    expect(rateSortValue({amount: '90'})).toBe(90);
+    expect(rateSortValue({amount: null})).toBe(Infinity);
+    expect(rateSortValue({amount: ''})).toBe(Infinity);
+    expect(rateSortValue({amount: undefined})).toBe(Infinity);
+    expect(rateSortValue({amount: 'abc'})).toBe(Infinity);
+    expect(rateSortValue({})).toBe(Infinity);
+  });
+
+  it('sorts priced services ascending and unpriced services last', () => {
+    const rates = [
+      {serviceCode: 'B-NULL', amount: null},
+      {serviceCode: 'C-80', amount: 80},
+      {serviceCode: 'D-EMPTY', amount: ''},
+      {serviceCode: 'A-120', amount: 120},
+      {serviceCode: 'E-90', amount: 90},
+    ];
+    const sorted = [...rates].sort((a, b) => {
+      const av = rateSortValue(a);
+      const bv = rateSortValue(b);
+      return av === bv ? 0 : av - bv;
+    });
+    expect(sorted.map((rate) => rate.serviceCode)).toEqual([
+      'C-80',
+      'E-90',
+      'A-120',
+      'B-NULL',
+      'D-EMPTY',
+    ]);
   });
 });
 

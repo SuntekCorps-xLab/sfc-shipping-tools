@@ -65,6 +65,28 @@ test('does not offer ordering for a rate with an unavailable amount', async ({pa
   await expect(page.locator('.rate-card__cta')).toHaveCount(0);
 });
 
+test('sorts unpriced services last so priced offers stay visible', async ({page}) => {
+  await serveStorefront(page, {
+    rates: {
+      ok: true,
+      rates: [
+        {serviceCode: 'B-NULL', serviceName: 'B', amount: null, currency: 'RMB'},
+        {serviceCode: 'C-80', serviceName: 'C', amount: 80, currency: 'RMB'},
+        {serviceCode: 'D-EMPTY', serviceName: 'D', amount: '', currency: 'RMB'},
+        {serviceCode: 'A-120', serviceName: 'A', amount: 120, currency: 'RMB'},
+      ],
+    },
+  });
+  await page.goto('/tests/fixtures/storefront.html');
+  await page.locator('#quote').click();
+
+  await expect(
+    page.getByRole('heading', {name: '4 shipping options found'}),
+  ).toBeVisible();
+  const codes = await page.locator('.rate-card__code').allTextContents();
+  expect(codes).toEqual(['C-80', 'A-120', 'B-NULL', 'D-EMPTY']);
+});
+
 test('rejects an invalid tracking number before calling the gateway', async ({page}) => {
   let trackingCalls = 0;
   await serveStorefront(page, {onTracking: () => { trackingCalls += 1; }});

@@ -6,6 +6,26 @@ import {approxUsdFromRate, estimateFirstMileRmb} from './rates.js';
 
 const RATE_PAGE_SIZE = 6;
 
+/** True when a rate carries a usable international price. */
+function hasPrice(rate) {
+  const raw = rate?.amount;
+  return (
+    raw !== null &&
+    raw !== undefined &&
+    raw !== '' &&
+    Number.isFinite(Number(raw))
+  );
+}
+
+/**
+ * Sort key for a rate: a finite price sorts ascending, while an unpriced rate
+ * (null / "" / non-finite) sorts last. Mirrors hasPrice() used by buildCard so
+ * the rendered "Price unavailable" cards never jump ahead of real offers.
+ */
+export function rateSortValue(rate) {
+  return hasPrice(rate) ? Number(rate.amount) : Infinity;
+}
+
 export function formatUsdApprox(value) {
   if (value == null || value === '' || !Number.isFinite(Number(value))) {
     return '';
@@ -100,8 +120,7 @@ export function createRateUi({root, results, getParcel, onStartOrder}) {
 
   function buildCard(rate, firstMile) {
     const international = Number(rate.amount);
-    const hasInternationalAmount =
-      rate.amount !== null && rate.amount !== '' && Number.isFinite(international);
+    const hasInternationalAmount = hasPrice(rate);
     const internationalAmount = hasInternationalAmount ? international : null;
     const firstMileAmount = Number(firstMile?.amount || 0);
     const internationalUsd =
@@ -190,7 +209,11 @@ export function createRateUi({root, results, getParcel, onStartOrder}) {
     results.classList.add('results-panel--filled');
     const firstMile = estimateFirstMileRmb(getParcel?.() || {});
     const rates = [...(Array.isArray(response.rates) ? response.rates : [])].sort(
-      (a, b) => Number(a.amount) - Number(b.amount),
+      (a, b) => {
+        const av = rateSortValue(a);
+        const bv = rateSortValue(b);
+        return av === bv ? 0 : av - bv;
+      },
     );
     if (!rates.length) {
       renderState('No shipping services found', 'Try another destination or parcel size.');

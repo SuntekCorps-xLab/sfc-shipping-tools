@@ -887,6 +887,13 @@
 
   // extensions/storefront-tools/src/rate-ui.js
   var RATE_PAGE_SIZE = 6;
+  function hasPrice(rate) {
+    const raw = rate == null ? void 0 : rate.amount;
+    return raw !== null && raw !== void 0 && raw !== "" && Number.isFinite(Number(raw));
+  }
+  function rateSortValue(rate) {
+    return hasPrice(rate) ? Number(rate.amount) : Infinity;
+  }
   function formatUsdApprox(value) {
     if (value == null || value === "" || !Number.isFinite(Number(value))) {
       return "";
@@ -970,7 +977,7 @@
     }
     function buildCard(rate, firstMile) {
       const international = Number(rate.amount);
-      const hasInternationalAmount = rate.amount !== null && rate.amount !== "" && Number.isFinite(international);
+      const hasInternationalAmount = hasPrice(rate);
       const internationalAmount = hasInternationalAmount ? international : null;
       const firstMileAmount = Number((firstMile == null ? void 0 : firstMile.amount) || 0);
       const internationalUsd = rate.amountUsd != null && Number.isFinite(Number(rate.amountUsd)) ? Number(rate.amountUsd) : null;
@@ -1044,7 +1051,11 @@
       results.classList.add("results-panel--filled");
       const firstMile = estimateFirstMileRmb((getParcel == null ? void 0 : getParcel()) || {});
       const rates = [...Array.isArray(response.rates) ? response.rates : []].sort(
-        (a, b) => Number(a.amount) - Number(b.amount)
+        (a, b) => {
+          const av = rateSortValue(a);
+          const bv = rateSortValue(b);
+          return av === bv ? 0 : av - bv;
+        }
       );
       if (!rates.length) {
         renderState("No shipping services found", "Try another destination or parcel size.");
