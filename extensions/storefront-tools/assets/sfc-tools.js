@@ -900,6 +900,12 @@
     }
     return `\u2248 $${Number(value).toFixed(2)} USD`;
   }
+  function formatAccountBalance(value) {
+    if (value == null || value === "" || !Number.isFinite(Number(value))) {
+      return "\u2014";
+    }
+    return Number(value).toFixed(2);
+  }
   function createRateUi({ root, results, getParcel, onStartOrder }) {
     let loadingTimer = null;
     function stopLoading() {
@@ -1991,9 +1997,10 @@
       try {
         const data = await fetchBalance({ baseUrl: apiBase });
         if (data == null ? void 0 : data.ok) {
+          const hasBalance = Number.isFinite(Number(data.balance));
           applyAccountSummary({
-            balance: Number(data.balance).toFixed(2),
-            currency: data.currency || "",
+            balance: formatAccountBalance(data.balance),
+            currency: hasBalance ? data.currency || "" : "",
             balanceUsd: data.balanceUsd != null && data.balanceUsd !== "" ? Number(data.balanceUsd) : null,
             userCode: data.userCode ? `SFC ${data.userCode}` : "Linked"
           });

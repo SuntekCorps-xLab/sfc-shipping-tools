@@ -33,6 +33,18 @@ export function formatUsdApprox(value) {
   return `≈ $${Number(value).toFixed(2)} USD`;
 }
 
+/**
+ * Format an account balance for display. A missing, empty, or non-finite value
+ * (the backend may return ok:true without a numeric balance) renders an em dash
+ * rather than "NaN" or a misleading "0.00".
+ */
+export function formatAccountBalance(value) {
+  if (value == null || value === '' || !Number.isFinite(Number(value))) {
+    return '—';
+  }
+  return Number(value).toFixed(2);
+}
+
 export function createRateUi({root, results, getParcel, onStartOrder}) {
   let loadingTimer = null;
 

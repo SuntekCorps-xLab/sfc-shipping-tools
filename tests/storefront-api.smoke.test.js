@@ -31,7 +31,7 @@ import {
   validateCargoDeclaration,
   validateComplianceFile,
 } from '../extensions/storefront-tools/src/compliance.js';
-import {formatUsdApprox, rateSortValue} from '../extensions/storefront-tools/src/rate-ui.js';
+import {formatUsdApprox, rateSortValue, formatAccountBalance} from '../extensions/storefront-tools/src/rate-ui.js';
 import {isAnalyticsEnabled} from '../extensions/storefront-tools/src/analytics.js';
 
 describe('api.endpoint', () => {
@@ -141,6 +141,32 @@ describe('rate price sorting', () => {
       'B-NULL',
       'D-EMPTY',
     ]);
+  });
+});
+
+describe('account balance formatting', () => {
+  it('formats a finite balance to two decimals', () => {
+    expect(formatAccountBalance(100)).toBe('100.00');
+    expect(formatAccountBalance(0)).toBe('0.00');
+    expect(formatAccountBalance('1234.5')).toBe('1234.50');
+  });
+
+  it('shows an em dash for a missing, empty, or non-numeric balance', () => {
+    expect(formatAccountBalance(undefined)).toBe('—');
+    expect(formatAccountBalance(null)).toBe('—');
+    expect(formatAccountBalance('')).toBe('—');
+    expect(formatAccountBalance('¥1,234.50')).toBe('—');
+    expect(formatAccountBalance('abc')).toBe('—');
+    expect(formatAccountBalance(NaN)).toBe('—');
+  });
+
+  it('renders the balance via the guarded formatter, not Number().toFixed', () => {
+    const source = readFileSync(
+      new URL('../extensions/storefront-tools/src/main.js', import.meta.url),
+      'utf8',
+    );
+    expect(source).toContain('balance: formatAccountBalance(data.balance)');
+    expect(source).not.toContain('Number(data.balance).toFixed(2)');
   });
 });
 

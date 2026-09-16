@@ -45,7 +45,7 @@ import {
 } from './orders.js';
 import { enhanceSelect } from './select.js';
 import {clear, element, focusResult} from './dom.js';
-import {createRateUi, formatUsdApprox} from './rate-ui.js';
+import {createRateUi, formatUsdApprox, formatAccountBalance} from './rate-ui.js';
 import {
   storageGet,
   storageSet,
@@ -929,9 +929,10 @@ function initSfcTools(root) {
     try {
       const data = await fetchBalance({baseUrl: apiBase});
       if (data?.ok) {
+        const hasBalance = Number.isFinite(Number(data.balance));
         applyAccountSummary({
-          balance: Number(data.balance).toFixed(2),
-          currency: data.currency || '',
+          balance: formatAccountBalance(data.balance),
+          currency: hasBalance ? data.currency || '' : '',
           balanceUsd:
             data.balanceUsd != null && data.balanceUsd !== ''
               ? Number(data.balanceUsd)
