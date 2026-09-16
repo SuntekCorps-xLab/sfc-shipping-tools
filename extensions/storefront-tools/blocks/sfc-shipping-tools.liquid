@@ -301,16 +301,9 @@
           <div class="form-grid form-grid--two">
             <label class="field">
               <span>Destination country / region</span>
-              <select name="country" required data-enhance-select>
+              {% comment %} Options are populated at runtime from the ISO-3166 list in src/countries.js (see data-country-options). {% endcomment %}
+              <select name="country" required data-enhance-select data-country-options>
                 <option value="" disabled selected hidden>Select destination</option>
-                <option value="US">United States</option>
-                <option value="GB">United Kingdom</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="AU">Australia</option>
-                <option value="CA">Canada</option>
-                <option value="JP">Japan</option>
-                <option value="MX">Mexico</option>
               </select>
             </label>
             <label class="field">

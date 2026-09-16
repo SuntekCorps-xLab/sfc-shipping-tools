@@ -32,6 +32,7 @@ import {
   validateComplianceFile,
 } from '../extensions/storefront-tools/src/compliance.js';
 import {formatUsdApprox, rateSortValue, formatAccountBalance} from '../extensions/storefront-tools/src/rate-ui.js';
+import {COUNTRIES} from '../extensions/storefront-tools/src/countries.js';
 import {isAnalyticsEnabled} from '../extensions/storefront-tools/src/analytics.js';
 
 describe('api.endpoint', () => {
@@ -495,5 +496,49 @@ describe('focus indicator contrast', () => {
         'rgba(255, 107, 22, 0.42)',
       );
     }
+  });
+});
+
+describe('destination country list', () => {
+  it('covers the full ISO 3166-1 alpha-2 set', () => {
+    expect(COUNTRIES.length).toBe(249);
+  });
+
+  it('has unique, well-formed codes with non-empty names', () => {
+    const codes = COUNTRIES.map((entry) => entry.code);
+    expect(new Set(codes).size).toBe(codes.length);
+    for (const {code, name} of COUNTRIES) {
+      expect(code).toMatch(/^[A-Z]{2}$/);
+      expect(typeof name).toBe('string');
+      expect(name.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it('offers destinations beyond the old 8-country hard limit', () => {
+    const codes = new Set(COUNTRIES.map((entry) => entry.code));
+    for (const code of ['SG', 'NL', 'BR', 'IN', 'ZA', 'US', 'JP']) {
+      expect(codes.has(code), `missing ${code}`).toBe(true);
+    }
+  });
+
+  it('populates the destination select from the list, not hardcoded options', () => {
+    const main = readFileSync(
+      new URL('../extensions/storefront-tools/src/main.js', import.meta.url),
+      'utf8',
+    );
+    expect(main).toContain(
+      "import { populateCountrySelect } from './countries.js'",
+    );
+    expect(main).toContain("querySelectorAll('select[data-country-options]')");
+
+    const liquid = readFileSync(
+      new URL(
+        '../extensions/storefront-tools/blocks/sfc-shipping-tools.liquid',
+        import.meta.url,
+      ),
+      'utf8',
+    );
+    expect(liquid).toContain('data-country-options');
+    expect(liquid).not.toContain('<option value="GB">United Kingdom</option>');
   });
 });

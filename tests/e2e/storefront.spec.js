@@ -189,3 +189,30 @@ test('custom select is keyboard accessible, labelled, and supports type-ahead', 
   await page.keyboard.press('Tab');
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
 });
+
+test('populates the destination select with the full ISO 3166 list', async ({page}) => {
+  const bundle = readFileSync(
+    resolve('extensions/storefront-tools/assets/sfc-tools.js'),
+    'utf8',
+  );
+  await page.route('**/*', (route) => route.abort());
+  await page.setContent(`<!doctype html><html><body>
+    <div class="sfc-standalone" data-sfc-tools-root data-customer-logged-in="false">
+      <select name="country" data-enhance-select data-country-options>
+        <option value="" disabled selected hidden>Select destination</option>
+      </select>
+    </div>
+  </body></html>`);
+  // Injecting the bundle runs initAll, which populates then enhances the select.
+  await page.addScriptTag({content: bundle});
+
+  const options = page.locator('select[name="country"] option');
+  // 249 ISO 3166-1 countries plus the blank placeholder.
+  await expect(options).toHaveCount(250);
+  // Countries beyond the old 8-country hard limit are now offered.
+  for (const code of ['SG', 'NL', 'BR']) {
+    await expect(page.locator(`select[name="country"] option[value="${code}"]`)).toHaveCount(1);
+  }
+  // The select is enhanced into the custom widget.
+  await expect(page.locator('.sfc-select__trigger')).toHaveCount(1);
+});

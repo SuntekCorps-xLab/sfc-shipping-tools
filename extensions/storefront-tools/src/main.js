@@ -44,6 +44,7 @@ import {
   showPdfInBrowser,
 } from './orders.js';
 import { enhanceSelect } from './select.js';
+import { populateCountrySelect } from './countries.js';
 import {clear, element, focusResult} from './dom.js';
 import {createRateUi, formatUsdApprox, formatAccountBalance} from './rate-ui.js';
 import {
@@ -387,6 +388,11 @@ function initSfcTools(root) {
   let ordersLoaded = [];
   let activeOrderDetail = null;
 
+  // Populate destination country options from the ISO-3166 list before the
+  // select is enhanced (enhanceSelect reads the options when it opens).
+  root
+    .querySelectorAll('select[data-country-options]')
+    .forEach(populateCountrySelect);
   root.querySelectorAll('select[data-enhance-select]').forEach(enhanceSelect);
 
   const accountMenu = root.querySelector('[data-account-menu]');

@@ -249,6 +249,8 @@ The `storefront-tools` extension ships **two** blocks that work together:
 
 The registration URL in the block schema is an editable presentation link. It is not an API credential. Storefront sign-in always uses the Shopify customer login, so there is no separate SFC login URL setting.
 
+The rate form's destination dropdown is populated at runtime from the full ISO 3166-1 alpha-2 list in `extensions/storefront-tools/src/countries.js` (every officially-assigned country, so the "220+ countries" claim holds). To limit or rename the offered destinations, edit the `COUNTRIES` array there and rebuild the storefront bundle; the backend still decides which destinations it can quote.
+
 ## 🔌 API surface
 
 The storefront client calls these App Proxy routes:
