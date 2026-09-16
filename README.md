@@ -260,7 +260,7 @@ The storefront client calls these App Proxy routes:
 | `POST` | `/account-link` | 🔗 Customer linking | Link Shopify and SFC accounts |
 | `GET` | `/balance` | 💳 Balance | Read the account balance |
 | `GET` | `/orders` | 🧾 Order workspace | List account-bound orders |
-| `POST` | `/order-fields` | 📝 Order workspace | Save shipment fields |
+| `POST` | `/order-fields` | 📝 Order workspace | Fetch channel-specific order field definitions |
 | `GET` | `/compliance` | 🛡️ Compliance | Read review and verification status |
 | `POST` | `/compliance-account-class` | 🛡️ Compliance | Select personal or enterprise flow |
 | `POST` | `/compliance-profile` | 🛡️ Compliance | Save verification profile |

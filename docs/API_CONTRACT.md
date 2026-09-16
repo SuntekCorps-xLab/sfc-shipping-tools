@@ -218,14 +218,21 @@ Success:
       "visible": true,
       "inputType": "text"
     }
-  ]
+  ],
+  "stateList": [{ "state": "California", "state_code": "CA" }],
+  "cityList": [{ "city": "Los Angeles", "city_code": "LAX" }],
+  "defaultShipper": { "recipientName": "Acme Co", "phone": "+1 555 0100" }
 }
 ```
 
 `fields` must be an array; each entry uses `key`, `group`, `label`, `required`,
 `visible`, and `inputType`. If `ok` is false or `fields` is missing, the client
 falls back to a built-in standard form. `hasConfigure: false` means the channel
-has no special field rules.
+has no special field rules. `stateList` (`{state, state_code}`) and `cityList`
+(`{city, city_code}`) optionally populate the recipient state / city dropdowns,
+and `defaultShipper` is an optional map of field key to value used to prefill the
+shipper fields; all three are optional. This route returns field definitions for
+the client to render — it does not save any shipment data.
 
 ### POST /compliance-account-class
 
