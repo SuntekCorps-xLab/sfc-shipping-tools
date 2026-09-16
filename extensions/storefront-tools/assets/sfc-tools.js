@@ -1210,6 +1210,18 @@
   }
 
   // extensions/storefront-tools/src/main.js
+  function focusFormField(target) {
+    var _a, _b;
+    if (!target) return;
+    if (((_a = target.dataset) == null ? void 0 : _a.enhanced) === "true") {
+      const trigger = (_b = target.parentElement) == null ? void 0 : _b.querySelector(".sfc-select__trigger");
+      if (trigger) {
+        trigger.focus();
+        return;
+      }
+    }
+    target.focus();
+  }
   function initSfcTools(root) {
     var _a, _b, _c, _d, _e, _f;
     if (!root || root.dataset.sfcInitialized === "true") return;
@@ -3434,20 +3446,20 @@
     });
     bindPackageFieldClamps(rateForm);
     orderForm == null ? void 0 : orderForm.addEventListener("submit", async (event) => {
-      var _a2, _b2, _c2, _d2, _e2, _f2, _g, _h, _i;
+      var _a2, _b2, _c2, _d2, _e2, _f2, _g, _h;
       event.preventDefault();
       if (root.dataset.customerLoggedIn !== "true") {
         goToShopifyLogin();
         return;
       }
       if (!orderForm.reportValidity()) {
-        (_a2 = orderForm.querySelector(":invalid")) == null ? void 0 : _a2.focus();
+        focusFormField(orderForm.querySelector(":invalid"));
         return;
       }
       const cargoValidation = validateCargoDeclaration(collectCargoDeclaration());
       if (!cargoValidation.valid) {
         setCargoStatus(cargoValidation.message, { error: true });
-        (_b2 = orderForm.querySelector("[data-cargo-gate]")) == null ? void 0 : _b2.scrollIntoView({
+        (_a2 = orderForm.querySelector("[data-cargo-gate]")) == null ? void 0 : _a2.scrollIntoView({
           behavior: "smooth",
           block: "center"
         });
@@ -3456,12 +3468,12 @@
       const parcel = currentParcel();
       if ((parcel == null ? void 0 : parcel.firstMileMode) === "pickup") {
         const contact = String(
-          ((_c2 = orderForm.querySelector("[data-order-pickup-contact]")) == null ? void 0 : _c2.value) || ""
+          ((_b2 = orderForm.querySelector("[data-order-pickup-contact]")) == null ? void 0 : _b2.value) || ""
         ).trim();
         const phoneInput = orderForm.querySelector("[data-order-pickup-phone]");
         const phoneNormalized = normalizeChinaMobile(phoneInput == null ? void 0 : phoneInput.value);
         const address = String(
-          ((_d2 = orderForm.querySelector("[data-order-pickup-address]")) == null ? void 0 : _d2.value) || ""
+          ((_c2 = orderForm.querySelector("[data-order-pickup-address]")) == null ? void 0 : _c2.value) || ""
         ).trim();
         if (!contact || !address) {
           setOrderSubmitStatus(
@@ -3481,10 +3493,10 @@
         if (phoneInput) phoneInput.value = phoneNormalized;
       }
       const shippingMethod = String(
-        ((_e2 = orderForm.elements.shippingMethod) == null ? void 0 : _e2.value) || ""
+        ((_d2 = orderForm.elements.shippingMethod) == null ? void 0 : _d2.value) || ""
       ).trim();
       const country = String(
-        ((_f2 = orderForm.elements.country) == null ? void 0 : _f2.value) || (parcel == null ? void 0 : parcel.country) || ""
+        ((_e2 = orderForm.elements.country) == null ? void 0 : _e2.value) || (parcel == null ? void 0 : parcel.country) || ""
       ).trim().toUpperCase();
       if (!shippingMethod || !country) {
         setOrderSubmitStatus(
@@ -3549,13 +3561,13 @@
       delete fields.worth;
       delete fields.total_export_declare;
       const pickupContact = String(
-        ((_g = orderForm.querySelector("[data-order-pickup-contact]")) == null ? void 0 : _g.value) || ""
+        ((_f2 = orderForm.querySelector("[data-order-pickup-contact]")) == null ? void 0 : _f2.value) || ""
       ).trim();
       const pickupPhone = normalizeChinaMobile(
-        (_h = orderForm.querySelector("[data-order-pickup-phone]")) == null ? void 0 : _h.value
+        (_g = orderForm.querySelector("[data-order-pickup-phone]")) == null ? void 0 : _g.value
       ) || "";
       const pickupAddress = String(
-        ((_i = orderForm.querySelector("[data-order-pickup-address]")) == null ? void 0 : _i.value) || ""
+        ((_h = orderForm.querySelector("[data-order-pickup-address]")) == null ? void 0 : _h.value) || ""
       ).trim();
       const pickup = (parcel == null ? void 0 : parcel.firstMileMode) === "pickup" ? {
         mode: "pickup",
@@ -3660,7 +3672,6 @@
       }
     });
     rateForm == null ? void 0 : rateForm.addEventListener("submit", async (event) => {
-      var _a2, _b2;
       event.preventDefault();
       closeOrderPanel();
       const requestGeneration = ++rateRequestGeneration;
@@ -3674,9 +3685,9 @@
           error: true
         });
         if (input.firstMileMode === "pickup" && !input.pickupProvince) {
-          (_a2 = rateForm.querySelector("[data-pickup-province]")) == null ? void 0 : _a2.focus();
+          focusFormField(rateForm.querySelector("[data-pickup-province]"));
         } else {
-          (_b2 = rateForm.querySelector(":invalid")) == null ? void 0 : _b2.focus();
+          focusFormField(rateForm.querySelector(":invalid"));
         }
         return;
       }

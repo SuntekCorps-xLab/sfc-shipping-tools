@@ -18,6 +18,14 @@
       </label>
       <form data-rate-form novalidate>
         <label><input type="radio" name="firstMileMode" value="dropoff" checked data-first-mile-mode>Drop-off</label>
+        <label><input type="radio" name="firstMileMode" value="pickup" data-first-mile-mode>Pickup</label>
+        <label class="field">
+          <span>Pickup province</span>
+          <select name="pickupProvince" data-pickup-province data-enhance-select>
+            <option value="" selected>Select province</option>
+            <option value="Guangdong">Guangdong</option>
+          </select>
+        </label>
         <input name="country" value="US">
         <input name="state" value="CA">
         <input name="city" value="Los Angeles">

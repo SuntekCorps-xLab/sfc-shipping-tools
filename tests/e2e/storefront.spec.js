@@ -87,6 +87,32 @@ test('sorts unpriced services last so priced offers stay visible', async ({page}
   expect(codes).toEqual(['C-80', 'A-120', 'B-NULL', 'D-EMPTY']);
 });
 
+test('focuses the select trigger, not the hidden native select, when pickup province is missing', async ({page}) => {
+  await serveStorefront(page);
+  await page.goto('/tests/fixtures/storefront.html');
+  await page.locator('input[name="firstMileMode"][value="pickup"]').check();
+  await page.locator('#quote').click();
+
+  await expect(page.locator('[data-rate-results]')).toContainText(
+    'Check the shipment details',
+  );
+  const active = await page.evaluate(() => {
+    const el = document.activeElement;
+    return {
+      tag: el.tagName,
+      className: el.className || '',
+      isProvinceTrigger: Boolean(
+        el.closest?.('.sfc-select')?.querySelector('select[name="pickupProvince"]'),
+      ),
+      enhanced: el.dataset ? el.dataset.enhanced : null,
+    };
+  });
+  expect(active.tag).toBe('BUTTON');
+  expect(active.className).toContain('sfc-select__trigger');
+  expect(active.isProvinceTrigger).toBe(true);
+  expect(active.enhanced).not.toBe('true');
+});
+
 test('rejects an invalid tracking number before calling the gateway', async ({page}) => {
   let trackingCalls = 0;
   await serveStorefront(page, {onTracking: () => { trackingCalls += 1; }});
@@ -125,7 +151,9 @@ test('keeps order creation locked while account review is pending', async ({page
 test('custom select is keyboard accessible, labelled, and supports type-ahead', async ({page}) => {
   await serveStorefront(page);
   await page.goto('/tests/fixtures/storefront.html');
-  const trigger = page.locator('.sfc-select__trigger');
+  const trigger = page.locator(
+    '.sfc-select:has(select[name="countrySelect"]) .sfc-select__trigger',
+  );
 
   // The trigger is named by the field label (not just the placeholder value)
   // and exposes the listbox it controls.

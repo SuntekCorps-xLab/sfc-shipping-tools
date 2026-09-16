@@ -54,6 +54,25 @@ import {
   trackStorefrontEvent,
 } from './analytics.js';
 
+/**
+ * Focus a form field for validation. When the field is a <select> that
+ * enhanceSelect() replaced with a custom widget, the native select is
+ * visually hidden (clip) and aria-hidden, so focusing it shows no visible
+ * focus and lands a screen reader on a hidden node. Redirect focus to the
+ * widget's trigger button instead.
+ */
+function focusFormField(target) {
+  if (!target) return;
+  if (target.dataset?.enhanced === 'true') {
+    const trigger = target.parentElement?.querySelector('.sfc-select__trigger');
+    if (trigger) {
+      trigger.focus();
+      return;
+    }
+  }
+  target.focus();
+}
+
 function initSfcTools(root) {
   if (!root || root.dataset.sfcInitialized === 'true') return;
   root.dataset.sfcInitialized = 'true';
@@ -2606,7 +2625,7 @@ function initSfcTools(root) {
     }
 
     if (!orderForm.reportValidity()) {
-      orderForm.querySelector(':invalid')?.focus();
+      focusFormField(orderForm.querySelector(':invalid'));
       return;
     }
 
@@ -2868,9 +2887,9 @@ function initSfcTools(root) {
         error: true,
       });
       if (input.firstMileMode === 'pickup' && !input.pickupProvince) {
-        rateForm.querySelector('[data-pickup-province]')?.focus();
+        focusFormField(rateForm.querySelector('[data-pickup-province]'));
       } else {
-        rateForm.querySelector(':invalid')?.focus();
+        focusFormField(rateForm.querySelector(':invalid'));
       }
       return;
     }
