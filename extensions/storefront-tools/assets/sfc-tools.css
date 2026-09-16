@@ -95,8 +95,9 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   transform: translateY(0);
 }
 .sfc-standalone :focus-visible {
-  outline: 3px solid rgba(255, 107, 22, 0.42);
-  outline-offset: 3px;
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--white);
 }
 .sfc-standalone .demo-ribbon {
   min-height: 32px;
@@ -231,7 +232,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   bottom: 0;
   left: 12px;
   height: 3px;
-  background: var(--signal);
+  background: var(--signal-cta);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 180ms ease;
@@ -1574,7 +1575,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
 .sfc-standalone .field select:focus,
 .sfc-standalone .tracking-input input:focus {
   background: #fffdfb;
-  border-color: var(--signal);
+  border-color: var(--signal-cta);
   box-shadow: 0 0 0 4px rgba(255, 107, 22, 0.1);
 }
 .sfc-standalone .field input::placeholder,
@@ -1627,7 +1628,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
 .sfc-standalone .sfc-select__trigger:focus,
 .sfc-standalone .sfc-select.is-open .sfc-select__trigger {
   background: #fffdfb;
-  border-color: var(--signal);
+  border-color: var(--signal-cta);
   box-shadow: 0 0 0 4px rgba(255, 107, 22, 0.1);
 }
 .sfc-standalone .sfc-select__label {
@@ -3741,7 +3742,7 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   transform: translateY(-2px);
 }
 .sfc-standalone .sfc-back-top:focus-visible {
-  outline: 3px solid rgba(255, 107, 22, 0.42);
+  outline: 3px solid var(--ink);
   outline-offset: 3px;
 }
 .sfc-standalone .sfc-back-top svg {

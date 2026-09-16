@@ -465,3 +465,35 @@ describe('block landmark hygiene', () => {
     expect(center).toContain('href="#SfcCenterMain"');
   });
 });
+
+describe('focus indicator contrast', () => {
+  const styleFiles = [
+    'base.css',
+    'layout.css',
+    'hero.css',
+    'forms.css',
+    'orders.css',
+    'tracking.css',
+    'shipping-center.css',
+  ];
+
+  it('uses an opaque ink ring for the global focus-visible outline', () => {
+    const base = readFileSync(
+      new URL('../extensions/storefront-tools/styles/base.css', import.meta.url),
+      'utf8',
+    );
+    expect(base).toContain('outline: 3px solid var(--ink)');
+  });
+
+  it('drops the translucent accent focus ring from every stylesheet', () => {
+    for (const file of styleFiles) {
+      const css = readFileSync(
+        new URL(`../extensions/storefront-tools/styles/${file}`, import.meta.url),
+        'utf8',
+      );
+      expect(css, `${file} still has a translucent focus ring`).not.toContain(
+        'rgba(255, 107, 22, 0.42)',
+      );
+    }
+  });
+});

@@ -356,7 +356,7 @@
   transform: translateY(-2px);
 }
 .sfc-standalone .sfc-back-top:focus-visible {
-  outline: 3px solid rgba(255, 107, 22, 0.42);
+  outline: 3px solid var(--ink);
   outline-offset: 3px;
 }
 .sfc-standalone .sfc-back-top svg {

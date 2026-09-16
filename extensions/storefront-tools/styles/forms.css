@@ -26,7 +26,7 @@
 .sfc-standalone .field select:focus,
 .sfc-standalone .tracking-input input:focus {
   background: #fffdfb;
-  border-color: var(--signal);
+  border-color: var(--signal-cta);
   box-shadow: 0 0 0 4px rgba(255, 107, 22, 0.1);
 }
 .sfc-standalone .field input::placeholder,
@@ -79,7 +79,7 @@
 .sfc-standalone .sfc-select__trigger:focus,
 .sfc-standalone .sfc-select.is-open .sfc-select__trigger {
   background: #fffdfb;
-  border-color: var(--signal);
+  border-color: var(--signal-cta);
   box-shadow: 0 0 0 4px rgba(255, 107, 22, 0.1);
 }
 .sfc-standalone .sfc-select__label {

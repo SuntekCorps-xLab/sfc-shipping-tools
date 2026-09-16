@@ -108,7 +108,7 @@
   bottom: 0;
   left: 12px;
   height: 3px;
-  background: var(--signal);
+  background: var(--signal-cta);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 180ms ease;

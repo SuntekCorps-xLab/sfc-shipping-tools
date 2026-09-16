@@ -89,8 +89,9 @@ body:has(.sfc-standalone[data-sfc-tools-root]) #MainContent.content-for-layout {
   transform: translateY(0);
 }
 .sfc-standalone :focus-visible {
-  outline: 3px solid rgba(255, 107, 22, 0.42);
-  outline-offset: 3px;
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--white);
 }
 .sfc-standalone .demo-ribbon {
   min-height: 32px;

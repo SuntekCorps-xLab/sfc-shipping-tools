@@ -132,3 +132,15 @@ for (const width of [1280, 375]) {
     }
   });
 }
+
+test('focus-visible ring is an opaque ink outline, not the translucent accent', async ({page}) => {
+  await page.route('**/*', (route) => route.abort());
+  await page.setContent(`<!doctype html><html><head><style>${stylesheet}</style></head>
+    <body><div class="sfc-standalone"><input id="focus-probe" type="text" name="x"></div></body></html>`);
+  // A text input matches :focus-visible, so the global focus ring applies.
+  const input = page.locator('#focus-probe');
+  await input.focus();
+  await expect(input).toHaveCSS('outline-style', 'solid');
+  await expect(input).toHaveCSS('outline-color', 'rgb(22, 41, 47)');
+  await expect(input).toHaveCSS('outline-width', '3px');
+});
